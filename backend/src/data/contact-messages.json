@@ -1,0 +1,13 @@
+[
+  {
+    "email": "smoke-contact@example.com",
+    "message": "Smoke contact message",
+    "name": "Smoke Website Visitor",
+    "phone": "20000000",
+    "subject": "smoke",
+    "id": "con_qct4gqzv",
+    "createdAt": "2026-07-01T09:22:52.261Z",
+    "updatedAt": "2026-07-01T09:22:52.261Z",
+    "status": "new"
+  }
+]

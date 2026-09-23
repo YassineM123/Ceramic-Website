@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.env
+*.local
+
+frontend/.env
+admin/.env
+backend/.env
+
+backend/src/data/backups/
+backend/src/data/refresh-tokens.json
+backend/src/data/*.sqlite3-shm
+backend/src/data/*.sqlite3-wal
+
+.vite-dev*.log
+.vite-dev*.err.log
+.monorepo-dev*.log
+.vercel/
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Raw .git archive with paths too long for Windows checkout
+docs/migration/admin-dashboard-leftovers/git-archive/
