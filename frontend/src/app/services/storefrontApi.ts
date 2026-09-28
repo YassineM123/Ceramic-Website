@@ -102,10 +102,12 @@ export interface PublicOrderPayload {
     firstName?: string;
     lastName?: string;
     name?: string;
-    email: string;
+    email?: string;
     phone: string;
     address: string;
     city: string;
+    governorate?: string;
+    delegation?: string;
     country?: string;
   };
   items: Array<{ productId: string | number; quantity: number }>;
