@@ -795,7 +795,7 @@ function normalizeMissingFields(input) {
 function detectQuantity(message) {
   const text = String(message || '');
   const direct =
-    text.match(/\b(?:qty|qte|quantite|quantity)\s*[:\-]?\s*(\d{1,3})\b/i) ||
+    text.match(/\b(?:qty|qte|quantite|quantity)\s*[\s:-]?\s*(\d{1,3})\b/i) ||
     text.match(/\b(\d{1,3})\s*(?:x|pcs?|pieces?|pieces|unites?|units?)\b/i);
   if (direct) return direct[1];
   return '';
@@ -894,8 +894,8 @@ function extractCustomerNameFromText(message) {
   if (!text) return '';
   const patterns = [
     /\b(?:my name is|i am|je m'appelle|je suis|ismi|ana)\s+([A-Za-z][A-Za-z\s'-]{2,40})/i,
-    /\bname\s*[:\-]\s*([A-Za-z][A-Za-z\s'-]{2,40})/i,
-    /\bnom\s*[:\-]\s*([A-Za-z][A-Za-z\s'-]{2,40})/i,
+    /\bname\s*[\s:-]\s*([A-Za-z][A-Za-z\s'-]{2,40})/i,
+    /\bnom\s*[\s:-]\s*([A-Za-z][A-Za-z\s'-]{2,40})/i,
   ];
   for (const pattern of patterns) {
     const match = text.match(pattern);
@@ -916,7 +916,7 @@ function extractProductFromText(message) {
   }
 
   const orderPattern =
-    /\b(?:order|commande|commander|acheter|nheb|je veux|i want)\b[\s:,-]*(?:le|la|the)?\s*([A-Za-z0-9][A-Za-z0-9\s\-_]{2,80})/i;
+    /\b(?:order|commande|commander|acheter|nheb|je veux|i want)\b[\s:,-]*(?:le|la|the)?\s*([A-Za-z0-9][A-Za-z0-9\s_-]{2,80})/i;
   const orderMatch = text.match(orderPattern);
   if (orderMatch?.[1]) {
     return orderMatch[1].trim().replace(/[.,;!?]+$/, '');
@@ -929,7 +929,7 @@ function extractVariantFromText(message) {
   const text = String(message || '').trim();
   if (!text) return '';
   const variantMatch =
-    text.match(/\b(?:size|taille|pointure|color|couleur|variant|version)\s*[:\-]?\s*([A-Za-z0-9\-\/ ]{1,40})/i) ||
+    text.match(/\b(?:size|taille|pointure|color|couleur|variant|version)\s*[\s:-]?\s*([A-Za-z0-9/ -]{1,40})/i) ||
     text.match(/\b(?:xl|l|m|s|xxl|36|37|38|39|40|41|42|43|44|45)\b/i);
   if (!variantMatch) return '';
   return String(variantMatch[1] || variantMatch[0] || '')
@@ -940,7 +940,7 @@ function extractVariantFromText(message) {
 function extractNotesFromText(message) {
   const text = String(message || '').trim();
   if (!text) return '';
-  const noteMatch = text.match(/\b(?:note|remark|remarque|message)\s*[:\-]\s*([^\n]{2,140})/i);
+  const noteMatch = text.match(/\b(?:note|remark|remarque|message)\s*[\s:-]\s*([^\n]{2,140})/i);
   return noteMatch?.[1] ? noteMatch[1].trim() : '';
 }
 
@@ -958,14 +958,8 @@ function fallbackExtractOrderInformation(conversationHistory) {
   const city = extractCityFromText(conversationText);
   const notes = extractNotesFromText(conversationText);
 
-  let status = 'needs_review';
-  if (detectedIntent !== 'order') {
-    status = 'not_confirmed';
-  } else if (product && phone && (address || city)) {
-    status = 'confirmed';
-  } else {
-    status = 'needs_review';
-  }
+  const status =
+    detectedIntent !== 'order' ? 'not_confirmed' : product && phone && (address || city) ? 'confirmed' : 'needs_review';
 
   let confidence = 0.62;
   if (status === 'confirmed') confidence = 0.86;
@@ -1142,13 +1136,6 @@ function sanitizeOrderConfirmationPayload(aiPayload, fallbackPayload) {
     missing_fields: readyToCreateOrder ? [] : missingFields,
     ready_to_create_order: readyToCreateOrder,
   };
-}
-
-function parseTone(value) {
-  const tone = String(value || '').trim().toLowerCase();
-  if (tone === 'commercial') return 'commercial';
-  if (tone === 'amical') return 'amical';
-  return 'professionnel';
 }
 
 function findProductMatch(message, products = []) {
@@ -1332,7 +1319,7 @@ function leadText(language) {
   return 'Pas de souci. Dites-moi juste le produit qui vous interesse et je vous guide rapidement.';
 }
 
-function orderText(language, tone) {
+function orderText(language, _tone) {
   return getReplyLibrary(language).order;
 }
 
@@ -1365,7 +1352,6 @@ function productReply({
   intent,
   product,
   currency,
-  normalizedMessage,
   fallbackMessage,
 }) {
   if (intent === 'price_question') {
@@ -1457,7 +1443,6 @@ function fallbackSocialReply({
       intent,
       product: matchedProduct,
       currency,
-      normalizedMessage,
       fallbackMessage: unknownText(language),
     });
   } else if (intent === 'delivery') {
@@ -2432,7 +2417,7 @@ function buildLearningCandidates({
     replyText &&
     !isToxicOrLowQuality(replyText) &&
     !containsSensitiveBusinessFacts(replyText) &&
-    !Boolean(aiReply?.needs_human) &&
+    !aiReply?.needs_human &&
     aiConfidence >= 0.78 &&
     intent !== 'complaint' &&
     intent !== 'support';
@@ -2629,7 +2614,7 @@ export function createSocialAgentService({ env, dataAccess = {} }) {
     contact,
     tone = 'professionnel',
     preferredLanguage = 'fr',
-    rules = [],
+    _rules = [],
     matchedRule = null,
     history = [],
   }) {

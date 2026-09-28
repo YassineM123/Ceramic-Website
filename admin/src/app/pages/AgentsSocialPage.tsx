@@ -91,12 +91,12 @@ export function AgentsSocialPage() {
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   useEffect(() => {
     void loadConversationList(selectedChannel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedChannel]);
 
   useEffect(() => {

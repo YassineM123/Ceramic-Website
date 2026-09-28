@@ -82,7 +82,7 @@ const children = services.map(({ name, args }) => {
 
     if (isPortConflict && (await isExistingViteAppHealthy(service.port, service.expectedTitle))) {
       // Keep the orchestrator alive so the other dev servers can continue running.
-      // eslint-disable-next-line no-console
+       
       console.log(`[${name}] already running on http://localhost:${service.port}; reusing existing process.`);
       return;
     }

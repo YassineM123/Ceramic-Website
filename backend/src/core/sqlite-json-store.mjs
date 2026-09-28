@@ -21,7 +21,7 @@ function readSeedFile(dataDir, resourceName, defaultValue) {
 export class SqliteJsonStore {
   constructor(dataDir, options = {}) {
     this.dataDir = dataDir;
-    this.dbPath = resolve(options.dbPath || join(dataDir, 'runtime.sqlite3'));
+    this.dbPath = resolve(options.dbPath || join(dataDir, 'ecommerce.sqlite3'));
     this.cache = new Map();
     this.operationQueue = Promise.resolve();
     this.transactions = new AsyncLocalStorage();

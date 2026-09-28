@@ -42,30 +42,21 @@ import { toast } from 'sonner';
 
 const STOREFRONT_URL = (import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:5173').replace(/\/+$/, '');
 
-const fallbackRevenueData = [
-  { date: '1 Mar', revenue: 12400 },
-  { date: '2 Mar', revenue: 15200 },
-  { date: '3 Mar', revenue: 13800 },
-  { date: '4 Mar', revenue: 16500 },
-  { date: '5 Mar', revenue: 14900 },
-  { date: '6 Mar', revenue: 18200 },
-  { date: '7 Mar', revenue: 17600 },
-];
+const fallbackRevenueData = Array.from({ length: 7 }, (_, index) => {
+  const d = new Date();
+  d.setDate(d.getDate() - (6 - index));
+  return {
+    date: new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(d),
+    revenue: 0,
+  };
+});
 
 const fallbackCategoryData = [
-  { name: 'Electronique', revenue: 45000 },
-  { name: 'Mode', revenue: 32000 },
-  { name: 'Maison', revenue: 28000 },
-  { name: 'Sports', revenue: 18000 },
+  { name: 'Tasses & Cafés', revenue: 0 },
+  { name: 'Huiliers & Vinaigriers', revenue: 0 },
 ];
 
-const fallbackRecentOrders = [
-  { id: '#10245', customer: 'Jean Dupont', status: 'paid', amount: 156, date: '3 Mar 2026' },
-  { id: '#10244', customer: 'Marie Martin', status: 'shipped', amount: 289, date: '3 Mar 2026' },
-  { id: '#10243', customer: 'Pierre Durand', status: 'delivered', amount: 543, date: '2 Mar 2026' },
-  { id: '#10242', customer: 'Sophie Bernard', status: 'pending', amount: 98, date: '2 Mar 2026' },
-  { id: '#10241', customer: 'Luc Petit', status: 'paid', amount: 234, date: '2 Mar 2026' },
-];
+const fallbackRecentOrders: Array<{ id: string; customer: string; status: string; amount: number; date: string }> = [];
 
 type DashboardSnapshot = {
   analytics: AnalyticsOverview | null;
@@ -111,11 +102,7 @@ const emptySnapshot: DashboardSnapshot = {
 };
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value);
+  return `${new Intl.NumberFormat('fr-TN', { maximumFractionDigits: 2 }).format(value || 0)} TND`;
 }
 
 function formatInteger(value: number) {
@@ -769,27 +756,35 @@ export function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id} className="group border-b transition-colors last:border-0 hover:bg-accent/30">
-                  <td className="px-6 py-4 text-sm font-semibold font-mono">{order.id}</td>
-                  <td className="px-4 py-4 text-sm font-medium">{order.customer}</td>
-                  <td className="px-4 py-4">
-                    <StatusBadge status={order.status} type={order.status} />
-                  </td>
-                  <td className="px-4 py-4 text-right text-sm font-semibold">{formatCurrency(order.amount)}</td>
-                  <td className="px-4 py-4 text-sm text-muted-foreground">{order.date}</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={() => navigate(`/admin/orders/${encodeURIComponent(String(order.id))}`)}
-                    >
-                      Voir
-                    </Button>
+              {recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-muted-foreground">
+                    Aucune commande enregistrée pour le moment.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentOrders.map((order) => (
+                  <tr key={order.id} className="group border-b transition-colors last:border-0 hover:bg-accent/30">
+                    <td className="px-6 py-4 text-sm font-semibold font-mono">{order.id}</td>
+                    <td className="px-4 py-4 text-sm font-medium">{order.customer}</td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={order.status} type={order.status} />
+                    </td>
+                    <td className="px-4 py-4 text-right text-sm font-semibold">{formatCurrency(order.amount)}</td>
+                    <td className="px-4 py-4 text-sm text-muted-foreground">{order.date}</td>
+                    <td className="px-6 py-4 text-right">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => navigate(`/admin/orders/${encodeURIComponent(String(order.id))}`)}
+                      >
+                        Voir
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

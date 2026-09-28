@@ -27,7 +27,18 @@ const AboutPage = lazy(() => import('./components/AboutPage').then((module) => (
 const ContactPage = lazy(() => import('./components/ContactPage').then((module) => ({ default: module.ContactPage })));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then((module) => ({ default: module.CheckoutPage })));
 
-type Page = 'home' | 'shop' | 'product' | 'about' | 'contact' | 'checkout';
+type Page = 'home' | 'shop' | 'product' | 'about' | 'contact' | 'checkout' | 'order-success' | 'not-found';
+
+function productSlug(product: Product) {
+  const slug = product.name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  return `${slug || 'product'}-${product.id}`;
+}
 
 export default function App() {
   const { data, isLoading, error } = useStorefrontData();
@@ -41,12 +52,45 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(activeFeaturedProduct || null);
+  const [orderSuccess, setOrderSuccess] = useState<{ id: string; total?: number } | null>(null);
+
+  const routeToState = () => {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    if (path === '/') return { page: 'home' as Page };
+    if (path === '/shop') return { page: 'shop' as Page };
+    if (path === '/about') return { page: 'about' as Page };
+    if (path === '/contact') return { page: 'contact' as Page };
+    if (path === '/checkout') return { page: 'checkout' as Page };
+    if (path.startsWith('/order-success/')) {
+      return { page: 'order-success' as Page, orderId: decodeURIComponent(path.split('/').filter(Boolean)[1] || '') };
+    }
+    if (path.startsWith('/product/')) {
+      const slug = decodeURIComponent(path.split('/').filter(Boolean)[1] || '');
+      const product = products.find((item) => productSlug(item) === slug || String(item.id) === slug || slug.endsWith(`-${item.id}`));
+      return product ? { page: 'product' as Page, product } : { page: 'not-found' as Page };
+    }
+    return { page: 'not-found' as Page };
+  };
+
+  const applyRoute = () => {
+    const route = routeToState();
+    setCurrentPage(route.page);
+    if (route.product) setSelectedProduct(route.product);
+    if (route.orderId) setOrderSuccess((current) => ({ id: route.orderId || current?.id || '', total: current?.total }));
+  };
 
   useEffect(() => {
     setSelectedProduct((current) =>
       current && products.some((item) => String(item.id) === String(current.id)) ? current : activeFeaturedProduct || null
     );
   }, [activeFeaturedProduct, products]);
+
+  useEffect(() => {
+    applyRoute();
+    const handlePopState = () => applyRoute();
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [products]);
 
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems((prev) => {
@@ -61,8 +105,19 @@ export default function App() {
     setIsCartOpen(true);
   };
 
-  const navigate = (page: Page) => {
+  const pathForPage = (page: Page, product?: Product, orderId?: string) => {
+    if (page === 'home') return '/';
+    if (page === 'product' && product) return `/product/${encodeURIComponent(productSlug(product))}`;
+    if (page === 'order-success') return `/order-success/${encodeURIComponent(orderId || orderSuccess?.id || '')}`;
+    if (page === 'not-found') return '/404';
+    return `/${page}`;
+  };
+
+  const navigate = (page: Page, options: { product?: Product; orderId?: string; total?: number } = {}) => {
+    if (options.product) setSelectedProduct(options.product);
+    if (page === 'order-success') setOrderSuccess({ id: options.orderId || '', total: options.total });
     setCurrentPage(page);
+    window.history.pushState({}, '', pathForPage(page, options.product, options.orderId));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -72,8 +127,7 @@ export default function App() {
   };
 
   const handleViewProduct = (product: Product) => {
-    setSelectedProduct(product);
-    navigate('product');
+    navigate('product', { product });
   };
 
   const handleOpenFeaturedProduct = (productId: string | number) => {
@@ -82,6 +136,12 @@ export default function App() {
   };
 
   const submitOrder = (payload: PublicOrderPayload) => createPublicOrder(payload);
+  const handleOrderComplete = (order?: { id: string; total: number }) => {
+    setCartItems([]);
+    if (order?.id) {
+      navigate('order-success', { orderId: order.id, total: order.total });
+    }
+  };
 
   const renderHome = () => (
     <>
@@ -174,9 +234,36 @@ export default function App() {
               shippingZones={data.shippingZones}
               taxRates={data.taxRates}
               onSubmitOrder={submitOrder}
-              onOrderComplete={() => setCartItems([])}
+              onOrderComplete={handleOrderComplete}
               onContinueShopping={() => navigate('shop')}
             />
+          )}
+          {currentPage === 'order-success' && (
+            <main className="min-h-screen bg-[#F8FBFA] pt-28 pb-16">
+              <div className="max-w-3xl mx-auto px-6 text-center">
+                <div className="bg-white rounded-3xl p-10 lg:p-14 shadow-xl">
+                  <h1 className="text-4xl lg:text-5xl font-serif text-[#17324D] mb-4">Commande confirmee</h1>
+                  <p className="text-[#5E6F73] text-lg leading-relaxed mb-8">
+                    Merci pour votre commande. Reference commande: {orderSuccess?.id || 'confirmee'}
+                    {typeof orderSuccess?.total === 'number' ? ` - Total confirme: ${orderSuccess.total} DT` : ''}
+                  </p>
+                  <button
+                    onClick={() => navigate('shop')}
+                    className="bg-[#075D9A] text-white px-10 py-4 rounded-full hover:bg-[#B86F3B] transition-colors duration-300"
+                  >
+                    Continuer mes achats
+                  </button>
+                </div>
+              </div>
+            </main>
+          )}
+          {currentPage === 'not-found' && (
+            <main className="min-h-screen bg-[#F8FBFA] pt-28 pb-16">
+              <div className="max-w-3xl mx-auto px-6 text-center">
+                <h1 className="text-4xl font-serif text-[#17324D] mb-3">Page introuvable</h1>
+                <button onClick={() => navigate('home')} className="text-[#075D9A] underline">Retour a l'accueil</button>
+              </div>
+            </main>
           )}
         </Suspense>
       )}
@@ -203,8 +290,7 @@ export default function App() {
         product={quickViewProduct}
         onAddToCart={addToCart}
         onViewDetails={(product) => {
-          setSelectedProduct(product);
-          navigate('product');
+          navigate('product', { product });
         }}
       />
 

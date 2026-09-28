@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { dirname, extname, join } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { parseJsonBody } from './core/body.mjs';
@@ -140,9 +140,13 @@ export async function createApp(env) {
   }
   let store;
   try {
+    const defaultSqlitePath = join(dataDir, 'ecommerce.sqlite3');
+    const resolvedSqlitePath = env.sqliteRuntimePath
+      ? resolve(dirname(currentDir), env.sqliteRuntimePath)
+      : defaultSqlitePath;
     store =
       storageDriver === 'sqlite'
-        ? new SqliteJsonStore(dataDir, { dbPath: env.sqliteRuntimePath || join(dataDir, 'runtime.sqlite3') })
+        ? new SqliteJsonStore(dataDir, { dbPath: resolvedSqlitePath })
         : new JsonStore(dataDir, {
             backupRetentionDays: env.backupRetentionDays,
             backupMaxPerResource: env.backupMaxPerResource,

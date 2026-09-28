@@ -46,7 +46,7 @@ export function shouldAutoCreateOrder({ confidence, orderStatus, missingFields =
 }
 
 export function shouldCaptureLead({ intent, confidence, needsHuman = false }) {
-  if (Boolean(needsHuman)) return false;
+  if (needsHuman) return false;
   const normalizedIntent = String(intent || '').trim().toLowerCase();
   if (!['lead', 'order', 'product_question', 'price_question', 'availability'].includes(normalizedIntent)) {
     return false;

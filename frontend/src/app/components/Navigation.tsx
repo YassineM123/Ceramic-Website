@@ -1,7 +1,7 @@
 import { ShoppingBag, Search, Menu, Heart, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 
-type Page = 'home' | 'shop' | 'product' | 'about' | 'contact' | 'checkout';
+type Page = 'home' | 'shop' | 'product' | 'about' | 'contact' | 'checkout' | 'order-success' | 'not-found';
 
 interface NavigationProps {
   onCartClick: () => void;

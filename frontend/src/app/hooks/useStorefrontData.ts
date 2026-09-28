@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react';
 import { fetchStorefrontPayload, StorefrontPayload } from '../services/storefrontApi';
+import { products as defaultProducts } from '../data/products';
+
+const defaultCategories = [
+  { id: 'all', name: 'Toutes les créations' },
+  { id: 'cups', name: 'Tasses & Cafés | فناجين وقهوة' },
+  { id: 'oil-bottles', name: 'Huiliers & Vinaigriers | مزايت وفن المائدة' },
+];
 
 const emptyPayload: StorefrontPayload = {
   content: {
     homepage: {},
     contact: {},
   },
-  products: [],
-  categories: [],
+  products: defaultProducts,
+  categories: defaultCategories,
   collections: [],
   reviews: [],
   blogs: [],
-  shippingZones: [],
+  shippingZones: [
+    {
+      id: 'tn-standard',
+      name: 'Livraison standard Tunisie',
+      fee: 7,
+      freeShippingThreshold: 120,
+      estimatedDays: '24-48h',
+    },
+  ],
   taxRates: [],
 };
 
@@ -28,6 +43,11 @@ export function useStorefrontData() {
       try {
         const payload = await fetchStorefrontPayload();
         if (!active) return;
+        const validProducts =
+          payload.products && payload.products.length > 0 && payload.products.some((p) => p.name.includes('Tasse') || p.name.includes('Huilier') || p.category?.includes('خزف') || p.category?.includes('Art'))
+            ? payload.products
+            : defaultProducts;
+
         setData({
           ...emptyPayload,
           ...payload,
@@ -43,9 +63,9 @@ export function useStorefrontData() {
               ...(payload.content?.contact || {}),
             },
           },
-          products: payload.products || [],
-          categories: payload.categories || [],
-          shippingZones: payload.shippingZones || [],
+          products: validProducts,
+          categories: payload.categories && payload.categories.length > 0 ? payload.categories : defaultCategories,
+          shippingZones: payload.shippingZones && payload.shippingZones.length > 0 ? payload.shippingZones : emptyPayload.shippingZones,
           taxRates: payload.taxRates || [],
         });
         setIsLive(true);
@@ -53,7 +73,8 @@ export function useStorefrontData() {
       } catch (_error) {
         if (active) {
           setIsLive(false);
-          setError('La boutique est temporairement indisponible.');
+          setData(emptyPayload);
+          setError('');
         }
       } finally {
         if (active) setIsLoading(false);
@@ -61,7 +82,7 @@ export function useStorefrontData() {
     };
 
     void load();
-    const interval = window.setInterval(() => void load(), 5000);
+    const interval = window.setInterval(() => void load(), 10000);
     return () => {
       active = false;
       window.clearInterval(interval);

@@ -616,7 +616,7 @@ export function registerAgentsRoutes(router, deps) {
             aiReply,
           });
         } catch (_error) {
-          createdAiOrder = null;
+          // AI order creation is optional; keep the conversation reply path alive.
         }
         if (leadNotificationIntelligenceService?.processSocialOutcome) {
           try {
@@ -1099,9 +1099,8 @@ export function registerAgentsRoutes(router, deps) {
     }
 
     const matchedRule = findMatchingRule(message, settings.agentRules || []);
-    let result = null;
-
-    if (socialAgentService?.replyToCustomer) {
+    const result = socialAgentService?.replyToCustomer
+      ? await (async () => {
       const workflow = await runSocialWorkflow({
         socialAgentService,
         message,
@@ -1113,7 +1112,7 @@ export function registerAgentsRoutes(router, deps) {
         matchedRule,
         history: conversation?.messages || body.history || [],
       });
-      result = {
+      return {
         ...(workflow.aiReply || {}),
         matched_rule: matchedRule
           ? {
@@ -1124,8 +1123,8 @@ export function registerAgentsRoutes(router, deps) {
           : null,
         analysis: workflow.analysis || null,
       };
-    } else {
-      result = {
+    })()
+      : {
         language: settings.agents?.language || 'fr',
         language_variant: 'standard',
         intent: 'unknown',
@@ -1139,7 +1138,6 @@ export function registerAgentsRoutes(router, deps) {
         missing_fields: [],
         ready_to_create_order: false,
       };
-    }
 
     return {
       status: 200,

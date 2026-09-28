@@ -37,8 +37,8 @@ export function formatDate(date: Date | string, format: 'short' | 'long' | 'time
 }
 
 // Currency formatting
-export function formatCurrency(amount: number, currency = '€'): string {
-  return `${amount.toLocaleString('fr-FR')} ${currency}`;
+export function formatCurrency(amount: number, currency = 'TND'): string {
+  return `${(amount || 0).toLocaleString('fr-TN', { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 // Percentage formatting

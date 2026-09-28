@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": "cat_tasses-cafes",
+    "name": "Tasses & Cafés",
+    "slug": "tasses-cafes",
+    "description": "Tasses et sous-tasses artisanales façonnées et peintes à la main",
+    "image": "/album/cups/cup-collection-overview.jpeg",
+    "active": true,
+    "sortOrder": 1
+  },
+  {
+    "id": "cat_huiliers-vinaigriers",
+    "name": "Huiliers & Vinaigriers",
+    "slug": "huiliers-vinaigriers",
+    "description": "Huiliers et bouteilles d'huile d'olive artisanales avec socles assortis",
+    "image": "/album/oil-bottles/oil-bottle-olives.jpeg",
+    "active": true,
+    "sortOrder": 2
+  }
+]

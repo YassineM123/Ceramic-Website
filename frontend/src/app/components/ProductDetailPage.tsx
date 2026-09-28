@@ -104,7 +104,10 @@ export function ProductDetailPage({
     onCheckout();
   };
 
-  const galleryImages = [product.image, ...productImages.filter((image) => image !== product.image)].slice(0, 4);
+  const galleryImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image, ...productImages.filter((image) => image !== product.image)].slice(0, 4);
 
   return (
     <div className="min-h-screen bg-[#F8FBFA] pt-20">

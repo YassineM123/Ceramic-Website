@@ -1,8 +1,8 @@
 {
   "store": {
-    "name": "Ma Boutique E-commerce",
-    "supportEmail": "support@example.com",
-    "supportPhone": "+216 XX XXX XXX",
+    "name": "Le Monde Céramique",
+    "supportEmail": "contact@lemondeceramique.tn",
+    "supportPhone": "+216 71 234 567",
     "address": "123 Avenue Habib Bourguiba, Tunis 1000"
   },
   "payments": {

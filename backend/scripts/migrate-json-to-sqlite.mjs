@@ -61,15 +61,6 @@ function json(value) {
   return JSON.stringify(value ?? null);
 }
 
-function firstName(fullName) {
-  return text(fullName).split(/\s+/)[0] || '';
-}
-
-function lastName(fullName) {
-  const parts = text(fullName).split(/\s+/).filter(Boolean);
-  return parts.length > 1 ? parts.slice(1).join(' ') : '';
-}
-
 function createSchema(db) {
   db.exec(`
     PRAGMA foreign_keys = ON;
@@ -502,24 +493,28 @@ function migrateUsers(db, users) {
 
 function migrateCategories(db, categories, products) {
   const byId = new Map();
+  const byName = new Map();
   for (const category of categories) {
     const name = text(category.name || category.title, 'General');
-    byId.set(cleanId(category.id || categoryIdForName(name), 'cat'), {
-      id: cleanId(category.id || categoryIdForName(name), 'cat'),
+    const id = cleanId(category.id || categoryIdForName(name), 'cat');
+    const entry = {
+      id,
       name,
       slug: text(category.slug, slugify(name, 'category')),
       description: text(category.description),
       imageUrl: text(category.image || category.imageUrl),
       active: boolInt(category.active, true),
       sortOrder: number(category.sortOrder, 0),
-    });
+    };
+    byId.set(id, entry);
+    byName.set(name.toLowerCase(), entry);
   }
   for (const product of products) {
     const name = text(product.category);
     if (!name) continue;
-    const id = categoryIdForName(name);
-    if (!byId.has(id)) {
-      byId.set(id, {
+    if (!byName.has(name.toLowerCase())) {
+      const id = categoryIdForName(name);
+      const entry = {
         id,
         name,
         slug: slugify(name, 'category'),
@@ -527,7 +522,9 @@ function migrateCategories(db, categories, products) {
         imageUrl: '',
         active: 1,
         sortOrder: 0,
-      });
+      };
+      byId.set(id, entry);
+      byName.set(name.toLowerCase(), entry);
     }
   }
   for (const category of byId.values()) {

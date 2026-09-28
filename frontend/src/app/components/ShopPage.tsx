@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, SlidersHorizontal, Grid3x3, List, Heart, ShoppingCart, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Product } from '../data/products';
@@ -6,6 +6,13 @@ import type { StorefrontCategory } from '../services/storefrontApi';
 
 const sortOptions = ['Sélection', 'Prix croissant', 'Prix décroissant', 'Nouveautés', 'Meilleures ventes'];
 const priceRanges = ['Tous les prix', 'Moins de 50 DT', '50 DT - 100 DT', '100 DT - 200 DT', 'Plus de 200 DT'];
+
+const pageSize = 9;
+
+function initialQueryValue(name: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback;
+  return new URLSearchParams(window.location.search).get(name) || fallback;
+}
 
 interface ShopPageProps {
   products: Product[];
@@ -16,10 +23,11 @@ interface ShopPageProps {
 }
 
 export function ShopPage({ products, categories, onAddToCart, onQuickView, onViewDetails }: ShopPageProps) {
-  const [selectedCategory, setSelectedCategory] = useState('Tous');
-  const [selectedPriceRange, setSelectedPriceRange] = useState('Tous les prix');
-  const [sortBy, setSortBy] = useState('Sélection');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(() => initialQueryValue('category', 'Tous'));
+  const [selectedPriceRange, setSelectedPriceRange] = useState(() => initialQueryValue('price', 'Tous les prix'));
+  const [sortBy, setSortBy] = useState(() => initialQueryValue('sort', sortOptions[0]));
+  const [searchTerm, setSearchTerm] = useState(() => initialQueryValue('search', ''));
+  const [page, setPage] = useState(() => Math.max(1, Number(initialQueryValue('page', '1')) || 1));
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState<Array<Product['id']>>([]);
@@ -56,6 +64,42 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
       });
   }, [products, searchTerm, selectedCategory, selectedPriceRange, sortBy]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const visibleProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', String(page));
+    if (selectedCategory !== 'Tous') params.set('category', selectedCategory);
+    if (selectedPriceRange !== 'Tous les prix') params.set('price', selectedPriceRange);
+    if (sortBy !== sortOptions[0]) params.set('sort', sortBy);
+    if (searchTerm.trim()) params.set('search', searchTerm.trim());
+    const next = params.toString() ? `/shop?${params.toString()}` : '/shop';
+    if (`${window.location.pathname}${window.location.search}` !== next) {
+      window.history.replaceState({}, '', next);
+    }
+  }, [page, selectedCategory, selectedPriceRange, sortBy, searchTerm]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSelectedCategory(params.get('category') || 'Tous');
+      setSelectedPriceRange(params.get('price') || 'Tous les prix');
+      setSortBy(params.get('sort') || sortOptions[0]);
+      setSearchTerm(params.get('search') || '');
+      setPage(Math.max(1, Number(params.get('page') || '1') || 1));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const resetToFirstPage = () => setPage(1);
+
   const toggleFavorite = (id: Product['id']) => {
     setFavorites((prev) =>
       prev.some((favoriteId) => String(favoriteId) === String(id))
@@ -73,7 +117,10 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
           <input
             type="text"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              resetToFirstPage();
+            }}
             placeholder="Rechercher une pièce..."
             className="w-full pl-12 pr-4 py-3 rounded-full bg-white border-2 border-transparent focus:border-[#075D9A] outline-none transition-colors duration-300"
           />
@@ -86,7 +133,10 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
           {categoryOptions.map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                resetToFirstPage();
+              }}
               className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-300 ${
                 selectedCategory === category
                   ? 'bg-[#075D9A] text-white'
@@ -108,7 +158,10 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
                 type="radio"
                 name="price"
                 checked={selectedPriceRange === range}
-                onChange={() => setSelectedPriceRange(range)}
+                onChange={() => {
+                  setSelectedPriceRange(range);
+                  resetToFirstPage();
+                }}
                 className="w-5 h-5 accent-[#075D9A]"
               />
               <span className="text-[#17324D] group-hover:text-[#075D9A] transition-colors duration-300">
@@ -130,6 +183,7 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
             setSelectedCategory('Tous');
             setSearchTerm('');
             setSelectedPriceRange('Tous les prix');
+            setPage(1);
             setShowFilters(false);
             productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
@@ -186,7 +240,10 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
               <div className="flex items-center gap-4">
                 <select
                   value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
+                  onChange={(event) => {
+                    setSortBy(event.target.value);
+                    resetToFirstPage();
+                  }}
                   className="px-4 py-2 rounded-full bg-[#F8FBFA] border-none outline-none focus:bg-[#E9D8BE] transition-colors duration-300 cursor-pointer"
                 >
                   {sortOptions.map((option) => (
@@ -238,6 +295,7 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
                     setSearchTerm('');
                     setSelectedCategory('Tous');
                     setSelectedPriceRange('Tous les prix');
+                    setPage(1);
                   }}
                   className="bg-[#075D9A] text-white px-8 py-3 rounded-full hover:bg-[#B86F3B] transition-colors duration-300"
                 >
@@ -249,7 +307,7 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
                 ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8'
                 : 'space-y-6'
               }>
-                {filteredProducts.map((product) => (
+                {visibleProducts.map((product) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -379,6 +437,36 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
             )}
 
             <div className="flex justify-center items-center gap-2 mt-12">
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => setPage((value) => Math.max(1, value - 1))}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-[#E9D8BE] transition-colors duration-300 disabled:opacity-40"
+                aria-label="Page precedente"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  onClick={() => setPage(pageNumber)}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-300 ${
+                    pageNumber === currentPage ? 'bg-[#075D9A] text-white' : 'bg-white text-[#17324D] hover:bg-[#E9D8BE]'
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-[#E9D8BE] transition-colors duration-300 disabled:opacity-40"
+                aria-label="Page suivante"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="hidden">
               <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-[#E9D8BE] transition-colors duration-300" aria-label="Page précédente">
                 <ChevronLeft className="w-4 h-4" />
               </button>

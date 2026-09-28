@@ -437,7 +437,6 @@ export function createEcommerceService(deps) {
     deliveryNotesRepo,
     expensesRepo,
     marketingCampaignsRepo,
-    marketingTemplatesRepo,
     adCampaignsRepo,
     salesChannelsRepo,
     syncJobsRepo,
@@ -1032,6 +1031,9 @@ export function createEcommerceService(deps) {
   }
 
   async function createManualOrder(context, payload = {}) {
+    return deps.store.runInTransaction(
+      ['products', 'orders', 'customers', 'deliveries', 'stock-movements', 'notifications', 'audit-logs'],
+      async () => {
     const customerInput = payload.customer && typeof payload.customer === 'object' ? payload.customer : payload;
     const itemsInput = Array.isArray(payload.items)
       ? payload.items
@@ -1303,6 +1305,8 @@ export function createEcommerceService(deps) {
     });
 
     return normalizeOrder(created, products);
+      }
+    );
   }
 
   async function generateDeliveryNote(context, orderId) {

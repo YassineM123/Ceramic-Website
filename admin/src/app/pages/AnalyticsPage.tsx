@@ -82,7 +82,7 @@ export function AnalyticsPage() {
         />
         <KPICard
           title="Panier moyen"
-          value="€142"
+          value="142 TND"
           change={8.7}
           trend="up"
         />
@@ -163,9 +163,9 @@ export function AnalyticsPage() {
                 {categoryPerformance.map((cat) => (
                   <tr key={cat.category} className="border-b hover:bg-accent/50">
                     <td className="py-3 text-sm font-medium">{cat.category}</td>
-                    <td className="py-3 text-sm text-right">€{cat.revenue.toLocaleString()}</td>
+                    <td className="py-3 text-sm text-right">{cat.revenue.toLocaleString()} TND</td>
                     <td className="py-3 text-sm text-right">{cat.orders}</td>
-                    <td className="py-3 text-sm text-right">€{cat.avgOrder}</td>
+                    <td className="py-3 text-sm text-right">{cat.avgOrder} TND</td>
                   </tr>
                 ))}
               </tbody>

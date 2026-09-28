@@ -101,7 +101,7 @@ export function NotificationsPanel() {
     setNotifications((prev) => prev.map((entry) => ({ ...entry, read: true })));
     try {
       await markAllNotificationsReadApi();
-    } catch (_error) {
+    } catch {
       await refresh();
     }
   };
@@ -110,7 +110,7 @@ export function NotificationsPanel() {
     setNotifications((prev) => prev.map((entry) => (entry.id === id ? { ...entry, read: true } : entry)));
     try {
       await markNotificationReadApi(id);
-    } catch (_error) {
+    } catch {
       await refresh();
     }
   };
@@ -125,7 +125,7 @@ export function NotificationsPanel() {
     setNotifications((prev) => prev.filter((entry) => entry.id !== id));
     try {
       await deleteNotificationApi(id);
-    } catch (_error) {
+    } catch {
       await refresh();
     }
   };

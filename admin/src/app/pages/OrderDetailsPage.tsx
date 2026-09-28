@@ -8,7 +8,7 @@ import { StatusBadge } from '../components/admin/StatusBadge';
 import { fetchOrderByIdApi, generateDeliveryNoteApi, generateInvoiceApi, OrderRecord } from '../services/api';
 
 function money(value?: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(value || 0);
+  return `${(value || 0).toLocaleString('fr-TN', { maximumFractionDigits: 2 })} TND`;
 }
 
 function formatDate(value?: string) {

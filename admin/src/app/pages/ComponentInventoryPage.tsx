@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
-  Home, Package, Users, TrendingUp, Bell, Search, Moon, 
-  Sun, ChevronDown, Menu, X, AlertCircle, CheckCircle2 
+  Home, Package, Users, TrendingUp, Search, Moon, 
+  Sun
 } from 'lucide-react';
 import { KPICard } from '../components/admin/KPICard';
 import { StatusBadge } from '../components/admin/StatusBadge';
@@ -100,7 +100,7 @@ export function ComponentInventoryPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             title="Revenu total"
-            value="€157,340"
+            value="157 340 TND"
             change={12.5}
             trend="up"
             icon={<TrendingUp size={24} />}
@@ -193,7 +193,7 @@ export function ComponentInventoryPage() {
                   <td className="py-3 px-4 text-sm font-medium">#10245</td>
                   <td className="py-3 px-4 text-sm">Jean Dupont</td>
                   <td className="py-3 px-4"><StatusBadge status="Payé" type="paid" /></td>
-                  <td className="py-3 px-4 text-sm text-right font-medium">€156</td>
+                  <td className="py-3 px-4 text-sm text-right font-medium">156 TND</td>
                   <td className="py-3 px-4 text-right">
                     <Button size="sm" variant="ghost">Voir</Button>
                   </td>
@@ -203,7 +203,7 @@ export function ComponentInventoryPage() {
                   <td className="py-3 px-4 text-sm font-medium">#10244</td>
                   <td className="py-3 px-4 text-sm">Marie Martin</td>
                   <td className="py-3 px-4"><StatusBadge status="Expédié" type="shipped" /></td>
-                  <td className="py-3 px-4 text-sm text-right font-medium">€289</td>
+                  <td className="py-3 px-4 text-sm text-right font-medium">289 TND</td>
                   <td className="py-3 px-4 text-right">
                     <Button size="sm" variant="ghost">Voir</Button>
                   </td>

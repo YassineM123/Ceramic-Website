@@ -150,7 +150,6 @@ export function createIntegrationSettingsService({ env, settingsRepo, auditLogSe
     const normalized = normalizeStored(stored);
     const hasEnvSecrets = envHasAny(env, definition.envKeys);
     const hasCompleteEnvSecrets = envHasAll(env, definition.envKeys);
-    const secretFields = definition.fields.filter((field) => field.secret);
     const config = {};
     const maskedSecrets = {};
 

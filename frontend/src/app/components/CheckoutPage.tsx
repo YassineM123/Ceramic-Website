@@ -9,7 +9,7 @@ interface CheckoutPageProps {
   shippingZones?: ShippingZone[];
   taxRates?: TaxRate[];
   onSubmitOrder?: (payload: PublicOrderPayload) => Promise<{ id: string; status: string; total: number }>;
-  onOrderComplete: () => void;
+  onOrderComplete: (order?: { id: string; status: string; total: number }) => void;
   onContinueShopping: () => void;
 }
 
@@ -62,7 +62,7 @@ export function CheckoutPage({
       setOrderId(created?.id || '');
       setServerTotal(typeof created?.total === 'number' ? created.total : null);
       setIsComplete(true);
-      onOrderComplete();
+      onOrderComplete(created || undefined);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Impossible de confirmer la commande.');
     } finally {

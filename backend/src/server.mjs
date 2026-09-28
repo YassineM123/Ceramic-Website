@@ -60,12 +60,12 @@ try {
   }
 
   // Keep this dev task alive so concurrently does not terminate the frontend.
-  // eslint-disable-next-line no-console
+   
   console.log(`Backend already running on http://localhost:${env.port}; reusing existing process.`);
   setInterval(() => {}, 60 * 60 * 1000);
 }
 
-// eslint-disable-next-line no-console
+ 
 if (server.listening) {
   console.log(`Backend running on http://localhost:${env.port}`);
 }

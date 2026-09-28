@@ -123,7 +123,7 @@ export function StockPage() {
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [movementProductFilter, movementTypeFilter, dateFrom, dateTo]);
 
   const filteredVariants = useMemo(() => {

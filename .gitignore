@@ -9,8 +9,11 @@ backend/.env
 
 backend/src/data/backups/
 backend/src/data/refresh-tokens.json
+backend/src/data/*.sqlite3
 backend/src/data/*.sqlite3-shm
 backend/src/data/*.sqlite3-wal
+backend/uploads/
+uploads/
 
 .vite-dev*.log
 .vite-dev*.err.log

@@ -4,28 +4,25 @@ import type { StorefrontCollection, StorefrontContent } from '../services/storef
 
 const fallbackCollections: StorefrontCollection[] = [
   {
-    id: 'tableware',
-    title: 'Art de la table',
-    description: 'Vaisselle artisanale pour recevoir avec elegance',
-    image:
-      'https://images.unsplash.com/photo-1762534729099-fbe059aaf1d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
-    itemCountLabel: '24 pieces',
+    id: 'cups-collection',
+    title: 'Collection Tasses & Cafés | فناجين وقهوة',
+    description: 'Tasses & sous-tasses façonnées et peintes à la main en séries exclusives',
+    image: '/album/cups/cup-collection-overview.jpeg',
+    itemCountLabel: '10 créations exclusives',
   },
   {
-    id: 'decor',
-    title: 'Decoration maison',
-    description: 'Pieces sculpturales pour salons et entrees',
-    image:
-      'https://images.unsplash.com/photo-1526198049595-f32cde2a219d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
-    itemCountLabel: '15 pieces',
+    id: 'oil-bottles-collection',
+    title: 'Collection Huiliers & Art de la Table | مزايت وفن المائدة',
+    description: 'Bouteilles d\'huile d\'olive artisanales avec socles assortis pour tables raffinées',
+    image: '/album/oil-bottles/oil-bottle-olives.jpeg',
+    itemCountLabel: '9 modèles artisanaux',
   },
   {
-    id: 'gifts',
-    title: 'Coffrets cadeaux',
-    description: 'Idees premium pour mariages et nouvelles maisons',
-    image:
-      'https://images.unsplash.com/photo-1631125916276-69bcd14e3980?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
-    itemCountLabel: '12 coffrets',
+    id: 'mediterranean-gifts',
+    title: 'Coffrets & Inspirations Cadeaux | هدايا راقية',
+    description: 'Cadeaux uniques aux motifs tunisiens et méditerranéens prêts à offrir',
+    image: '/album/cups/cup-lemon-set.jpeg',
+    itemCountLabel: 'Coffrets disponibles',
   },
 ];
 
@@ -46,9 +43,9 @@ export function FeaturedCollections({ content, collections, onOpenProduct }: Fea
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[#075D9A] uppercase tracking-widest text-sm"
+            className="text-[#075D9A] uppercase tracking-widest text-sm font-medium"
           >
-            {content?.collectionEyebrow || 'Decouvrez nos collections'}
+            {content?.collectionEyebrow || 'Découvrez nos collections artisanales | تشكيلاتنا الحرفية'}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +54,7 @@ export function FeaturedCollections({ content, collections, onOpenProduct }: Fea
             transition={{ delay: 0.1 }}
             className="text-4xl lg:text-6xl font-serif text-[#17324D]"
           >
-            {content?.collectionTitle || 'Ceramique artisanale pour chaque moment'}
+            {content?.collectionTitle || 'Céramique artisanale faite avec passion'}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -67,7 +64,7 @@ export function FeaturedCollections({ content, collections, onOpenProduct }: Fea
             className="text-lg text-[#5E6F73] max-w-2xl mx-auto"
           >
             {content?.collectionSubtitle ||
-              "Des collections pensees pour l'art de la table, la decoration maison et les cadeaux elegants."}
+              "Des créations pensées pour l'art de la table, le plaisir du café et les cadeaux raffinés."}
           </motion.p>
         </div>
 
@@ -94,24 +91,24 @@ export function FeaturedCollections({ content, collections, onOpenProduct }: Fea
               className={`group ${collection.productId ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075D9A] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F8FBFA] rounded-3xl' : ''}`}
             >
               <div className="relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500">
-                <div className="aspect-[4/5] overflow-hidden">
+                <div className="aspect-[4/5] overflow-hidden bg-[#F0F4F4]">
                   <img
                     src={collection.image}
                     alt={collection.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/80 via-[#17324D]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform translate-y-6 group-hover:translate-y-0 transition-transform duration-500">
-                  <div className="mb-2 text-sm text-[#E9D8BE] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/90 via-[#17324D]/30 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-500" />
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <div className="mb-2 text-xs uppercase tracking-wider text-[#E9D8BE] font-medium">
                     {collection.itemCountLabel || collection.items}
                   </div>
-                  <h3 className="text-2xl font-serif mb-2">{collection.title}</h3>
-                  <p className="text-sm text-[#E9D8BE] mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <h3 className="text-2xl font-serif mb-2 leading-tight">{collection.title}</h3>
+                  <p className="text-sm text-[#E9D8BE]/90 mb-4 line-clamp-2">
                     {collection.description}
                   </p>
-                  <div className="flex items-center gap-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <span>Voir la collection</span>
+                  <div className="flex items-center gap-2 text-sm font-medium text-white group-hover:text-[#E9D8BE] transition-colors duration-300">
+                    <span>Explorer la collection</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
                   </div>
                 </div>

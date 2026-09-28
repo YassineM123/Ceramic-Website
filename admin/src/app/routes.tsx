@@ -9,6 +9,7 @@ function RouteLoading() {
 }
 
 const hydrateFallbackElement = <RouteLoading />;
+const exposeDevRoutes = import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_ROUTES === 'true';
 
 export const router = createBrowserRouter([
   {
@@ -239,6 +240,9 @@ export const router = createBrowserRouter([
         path: 'components',
         hydrateFallbackElement,
         lazy: async () => {
+          if (!exposeDevRoutes) {
+            return { Component: () => <Navigate to="/admin" replace /> };
+          }
           const { ComponentInventoryPage } = await import('./pages/ComponentInventoryPage');
           return { Component: ComponentInventoryPage };
         },

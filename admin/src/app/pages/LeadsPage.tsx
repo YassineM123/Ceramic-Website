@@ -68,7 +68,7 @@ export function LeadsPage() {
 
   useEffect(() => {
     void loadLeads();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function LeadsPage() {
       void loadLeads();
     }, 250);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchQuery, cityFilter, statusFilters.join('|')]);
 
   useEffect(() => {
@@ -109,9 +109,9 @@ export function LeadsPage() {
 
       let attempts = 0;
       while (attempts < 30) {
-        // eslint-disable-next-line no-await-in-loop
+         
         await new Promise((resolve) => setTimeout(resolve, 600));
-        // eslint-disable-next-line no-await-in-loop
+         
         const status = await fetchScrapeJobApi(job.id);
         if (status.status === 'completed') {
           break;

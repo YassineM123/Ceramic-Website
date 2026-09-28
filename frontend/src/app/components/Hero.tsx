@@ -11,9 +11,9 @@ interface HeroProps {
 }
 
 const fallbackImages = {
-  main: 'https://images.unsplash.com/photo-1631125915902-d8abe9225ff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
-  detail: 'https://images.unsplash.com/photo-1631125915732-b98f8774f675?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
-  texture: 'https://images.unsplash.com/photo-1526198049595-f32cde2a219d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080',
+  main: '/album/oil-bottles/oil-bottle-olives.jpeg',
+  detail: '/album/cups/cup-lemon-set.jpeg',
+  texture: '/album/oil-bottles/oil-bottle-red-chili.jpeg',
 };
 
 export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
@@ -21,12 +21,12 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
   const mainImage = content?.heroImage || featuredProduct?.image || fallbackImages.main;
   const detailImage = content?.heroDetailImage || fallbackImages.detail;
   const textureImage = content?.heroTextureImage || fallbackImages.texture;
-  const title = content?.heroTitle || 'Ceramique artisanale tunisienne pour une maison elegante';
+  const title = content?.heroTitle || 'Céramique artisanale tunisienne pour une maison élégante';
   const subtitle =
     content?.heroSubtitle ||
-    'Vaisselle, decoration maison et cadeaux faconnes a la main par des artisans tunisiens.';
-  const productName = featuredProduct?.name || 'Vase Decoratif';
-  const productPrice = featuredProduct?.price || 129;
+    'Tasses peintes à la main, huiliers avec socle et créations uniques façonnées par des artisans tunisiens.';
+  const productName = featuredProduct?.name || 'Huilier Olives Noires avec Socle';
+  const productPrice = featuredProduct?.price || 55;
 
   return (
     <section className="relative min-h-[calc(100vh-2rem)] overflow-hidden bg-[#EAF3F2] pt-20 lg:pt-28">
@@ -66,7 +66,7 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
                 onClick={onShop}
                 className="group flex items-center justify-center gap-2 rounded-full bg-[#075D9A] px-8 py-3.5 text-white shadow-[0_18px_45px_rgba(7,93,154,0.24)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#B86F3B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075D9A] focus-visible:ring-offset-4 focus-visible:ring-offset-[#EAF3F2] lg:py-4"
               >
-                <span>{content?.heroPrimaryCta || 'Decouvrir la boutique'}</span>
+                <span>{content?.heroPrimaryCta || 'Découvrir la boutique'}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </button>
               <button
@@ -79,16 +79,16 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
 
             <div className="hidden max-w-xl grid-cols-3 gap-4 border-t border-[#5E6F73]/15 pt-6 text-sm text-[#5E6F73] sm:grid">
               <div className="space-y-1">
-                <div className="font-serif text-2xl text-[#075D9A]">500+</div>
-                <div>Pieces uniques</div>
-              </div>
-              <div className="space-y-1">
                 <div className="font-serif text-2xl text-[#075D9A]">100%</div>
-                <div>Fait main</div>
+                <div>Fait main | يدوي</div>
               </div>
               <div className="space-y-1">
-                <div className="font-serif text-2xl text-[#075D9A]">Tunis</div>
-                <div>Atelier tunisien</div>
+                <div className="font-serif text-2xl text-[#075D9A]">Pièces uniques</div>
+                <div>Peintes à la main</div>
+              </div>
+              <div className="space-y-1">
+                <div className="font-serif text-2xl text-[#075D9A]">Tunisie</div>
+                <div>Livraison express</div>
               </div>
             </div>
           </motion.div>
@@ -159,7 +159,7 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
         transition={{ delay: 0.9, duration: 0.8 }}
         className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-sm text-[#5E6F73] md:flex"
       >
-        <span>Decouvrir</span>
+        <span>Découvrir</span>
         <ArrowDown className="h-4 w-4" />
       </motion.div>
     </section>
