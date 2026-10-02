@@ -440,7 +440,7 @@ export function MapPage() {
             </div>
             <div>
               <p className="text-muted-foreground">Revenu</p>
-              <p className="font-semibold">EUR {Math.round(totalRevenue).toLocaleString()}</p>
+              <p className="font-semibold">{Math.round(totalRevenue).toLocaleString()} TND</p>
             </div>
           </div>
         </div>
@@ -537,11 +537,11 @@ export function MapPage() {
                 </div>
                 <div>
                   <p className="mb-1 text-sm text-muted-foreground">Revenu total</p>
-                  <p className="text-2xl font-semibold">EUR {Math.round(selectedCity.revenue).toLocaleString()}</p>
+                  <p className="text-2xl font-semibold">{Math.round(selectedCity.revenue).toLocaleString()} TND</p>
                 </div>
                 <div>
                   <p className="mb-1 text-sm text-muted-foreground">Panier moyen</p>
-                  <p className="text-2xl font-semibold">EUR {Math.round(selectedCity.avgBasket).toLocaleString()}</p>
+                  <p className="text-2xl font-semibold">{Math.round(selectedCity.avgBasket).toLocaleString()} TND</p>
                 </div>
                 <div>
                   <p className="mb-1 text-sm text-muted-foreground">Taux d'annulation</p>
@@ -581,7 +581,7 @@ export function MapPage() {
                 <div className="flex-1">
                   <p className="font-medium">{city.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {city.orders} commandes | EUR {Math.round(city.revenue).toLocaleString()}
+                    {city.orders} commandes | {Math.round(city.revenue).toLocaleString()} TND
                   </p>
                 </div>
                 <div className="h-2 max-w-32 flex-1 rounded-full bg-muted">

@@ -33,10 +33,11 @@ const paymentMethodOptions = ['Cash on delivery'];
 const deliveryTypeOptions = ['Home delivery', 'Pickup', 'Delivery company'];
 
 function money(value: number) {
-  return new Intl.NumberFormat('en-US', {
+  const amount = new Intl.NumberFormat('fr-TN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value || 0);
+  return `${amount} TND`;
 }
 
 function defaultDraft(): DraftState {

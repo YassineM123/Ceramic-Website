@@ -139,7 +139,7 @@ export function BestSellers({ products, onAddToCart, onQuickView, onViewDetails 
                   </h3>
                   <div className="flex items-center justify-between">
                     <span className="text-xl font-serif text-[#075D9A]">
-                      {product.price} DT
+                      {product.price} TND
                     </span>
                     <div className="flex gap-1">
                       {[...Array(5)].map((_, i) => (

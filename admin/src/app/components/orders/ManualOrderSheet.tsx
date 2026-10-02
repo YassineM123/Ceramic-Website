@@ -66,7 +66,7 @@ function createLineDraft(product: ProductRecord): ManualOrderLineDraft {
 }
 
 function money(value: number) {
-  return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value || 0);
+  return `${new Intl.NumberFormat('fr-TN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value || 0)} TND`;
 }
 
 function defaultDraft(): DraftState {

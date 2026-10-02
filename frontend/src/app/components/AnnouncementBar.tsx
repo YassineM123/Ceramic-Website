@@ -10,7 +10,7 @@ export function AnnouncementBar() {
       <div className="max-w-[1400px] mx-auto h-full px-6 lg:px-12">
         <div className="flex h-full items-center justify-center text-center">
           <span className="truncate text-xs sm:text-sm">
-            Livraison offerte dès 199 DT · الدفع عند الاستلام في تونس
+            Livraison offerte dès 199 TND · الدفع عند الاستلام في تونس
           </span>
         </div>
       </div>

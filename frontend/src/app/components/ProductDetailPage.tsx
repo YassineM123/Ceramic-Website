@@ -4,13 +4,6 @@ import { motion } from 'motion/react';
 import { featuredProduct, type Product } from '../data/products';
 import type { ShippingZone, StorefrontReview } from '../services/storefrontApi';
 
-const productImages = [
-  'https://images.unsplash.com/photo-1631125915973-e0d155a14e4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHw0fHxoYW5kbWFkZSUyMHBvdHRlcnklMjBjZXJhbWljJTIwdmFzZXxlbnwxfHx8fDE3ODA0NDEyMDh8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  'https://images.unsplash.com/photo-1631125915902-d8abe9225ff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxoYW5kbWFkZSUyMHBvdHRlcnklMjBjZXJhbWljJTIwdmFzZXxlbnwxfHx8fDE3ODA0NDEyMDh8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  'https://images.unsplash.com/photo-1631125916276-69bcd14e3980?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHw1fHxoYW5kbWFkZSUyMHBvdHRlcnklMjBjZXJhbWljJTIwdmFzZXxlbnwxfHx8fDE3ODA0NDEyMDh8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  'https://images.unsplash.com/photo-1677761640321-b80251be00ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxoYW5kbWFkZSUyMHBvdHRlcnklMjBjZXJhbWljJTIwdmFzZXxlbnwxfHx8fDE3ODA0NDEyMDh8MA&ixlib=rb-4.1.0&q=80&w=1080',
-];
-
 const reviews = [
   {
     id: 1,
@@ -104,10 +97,7 @@ export function ProductDetailPage({
     onCheckout();
   };
 
-  const galleryImages =
-    product.images && product.images.length > 0
-      ? product.images
-      : [product.image, ...productImages.filter((image) => image !== product.image)].slice(0, 4);
+  const galleryImages = product.images && product.images.length > 0 ? product.images : [product.image];
 
   return (
     <div className="min-h-screen bg-[#F8FBFA] pt-20">
@@ -133,12 +123,13 @@ export function ProductDetailPage({
               className="aspect-square rounded-3xl overflow-hidden bg-white"
             >
               <img
-                src={galleryImages[selectedImage]}
+                src={galleryImages[selectedImage] ?? galleryImages[0]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </motion.div>
 
+            {galleryImages.length > 1 && (
             <div className="grid grid-cols-4 gap-4">
               {galleryImages.map((image, index) => (
                 <button
@@ -154,6 +145,7 @@ export function ProductDetailPage({
                 </button>
               ))}
             </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -176,7 +168,7 @@ export function ProductDetailPage({
                 </div>
                 <span className="text-[#5E6F73]">4.9 (127 avis)</span>
               </div>
-              <div className="text-4xl font-serif text-[#075D9A] mb-6">{product.price} DT</div>
+              <div className="text-4xl font-serif text-[#075D9A] mb-6">{product.price} TND</div>
 
               <p className="text-lg text-[#5E6F73] leading-relaxed mb-6">
                 {product.description}
@@ -262,7 +254,7 @@ export function ProductDetailPage({
                 <div className="w-12 h-12 bg-gradient-to-br from-[#075D9A] to-[#B86F3B] rounded-full flex items-center justify-center">
                   <Truck className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-sm text-[#17324D]">Livraison offerte dès 199 DT</span>
+                <span className="text-sm text-[#17324D]">Livraison offerte dès 199 TND</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#075D9A] to-[#B86F3B] rounded-full flex items-center justify-center">
@@ -378,10 +370,10 @@ export function ProductDetailPage({
                     <div className="rounded-2xl border border-[#17324D]/10 bg-white p-5">
                       <h4 className="text-xl font-serif text-[#17324D] mb-3">{shippingZone.name}</h4>
                       <ul className="list-disc list-inside text-[#5E6F73] space-y-2">
-                        <li>Frais de livraison: {shippingZone.fee} DT</li>
+                        <li>Frais de livraison: {shippingZone.fee} TND</li>
                         <li>Delai estime: {shippingZone.estimatedDays}</li>
                         {shippingZone.freeShippingThreshold > 0 && (
-                          <li>Livraison offerte des {shippingZone.freeShippingThreshold} DT</li>
+                          <li>Livraison offerte des {shippingZone.freeShippingThreshold} TND</li>
                         )}
                         <li>
                           Zones: {shippingZone.cities?.length ? shippingZone.cities.join(', ') : shippingZone.countries?.join(', ') || 'Tunisie'}
@@ -392,14 +384,14 @@ export function ProductDetailPage({
                   <div>
                     <h4 className="text-xl font-serif text-[#17324D] mb-3">Livraison partout en Tunisie</h4>
                     <p className="text-[#5E6F73] leading-relaxed mb-3">
-                      Livraison offerte dès 199 DT. Chaque commande est emballée avec soin pour protéger la céramique pendant le transport.
+                      Livraison offerte dès 199 TND. Chaque commande est emballée avec soin pour protéger la céramique pendant le transport.
                       <br />
                       توصيل إلى جميع أنحاء تونس وتغليف آمن للقطع الخزفية.
                     </p>
                     <ul className="list-disc list-inside text-[#5E6F73] space-y-2">
                       <li>Livraison standard selon la ville</li>
                       <li>Suivi de commande après confirmation</li>
-                      <li>Livraison offerte dès 199 DT</li>
+                      <li>Livraison offerte dès 199 TND</li>
                     </ul>
                   </div>
                   <div>
@@ -446,7 +438,7 @@ export function ProductDetailPage({
                       {product.name}
                     </h3>
                     <div className="text-xl font-serif text-[#075D9A]">
-                      {product.price} DT
+                      {product.price} TND
                     </div>
                   </div>
                 </div>

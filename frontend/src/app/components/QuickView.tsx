@@ -71,7 +71,7 @@ export function QuickView({ isOpen, onClose, product, onAddToCart, onViewDetails
                     </div>
                     <span className="text-sm text-[#5E6F73]">Note client 4.9</span>
                   </div>
-                  <div className="text-3xl font-serif text-[#075D9A] mb-4">{product.price} DT</div>
+                  <div className="text-3xl font-serif text-[#075D9A] mb-4">{product.price} TND</div>
                   <p className="text-[#5E6F73] leading-relaxed">{product.description}</p>
                 </div>
 

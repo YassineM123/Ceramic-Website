@@ -57,7 +57,7 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
               <img src={mainImage} alt={productName} className="h-24 w-24 flex-none rounded-xl object-cover" />
               <div className="min-w-0">
                 <h3 className="font-serif text-xl leading-tight text-[#17324D]">{productName}</h3>
-                <p className="mt-1 text-sm text-[#5E6F73]">{productPrice} DT</p>
+                <p className="mt-1 text-sm text-[#5E6F73]">{productPrice} TND</p>
               </div>
             </motion.div>
 
@@ -146,7 +146,7 @@ export function Hero({ content, featuredProduct, onShop, onStory }: HeroProps) {
                   <h3 className="font-serif text-2xl leading-tight text-[#17324D]">{productName}</h3>
                   <p className="mt-1 text-sm text-[#5E6F73]">{featuredProduct?.category || 'Collection'}</p>
                 </div>
-                <span className="font-serif text-2xl text-[#075D9A]">{productPrice} DT</span>
+                <span className="font-serif text-2xl text-[#075D9A]">{productPrice} TND</span>
               </div>
             </motion.div>
           </motion.div>

@@ -74,7 +74,7 @@ function getTodayStamp(): string {
 
 function isImageSource(value: string): boolean {
   const trimmed = value.trim();
-  return trimmed.startsWith('data:image/') || /^https?:\/\//i.test(trimmed);
+  return trimmed.startsWith('data:image/') || /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/');
 }
 
 function isInlineImageData(value: string): boolean {
@@ -431,7 +431,7 @@ export function ProductsPage() {
                       <p className="text-sm font-medium">{product.name}</p>
                       <p className="text-xs text-muted-foreground">{product.category}</p>
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-medium">EUR {product.price}</td>
+                    <td className="py-3 px-4 text-sm text-right font-medium">{product.price} TND</td>
                     <td className="py-3 px-4 text-sm text-right">
                       <span className={product.stock < 10 ? 'text-warning' : ''}>{product.stock}</span>
                     </td>
@@ -474,7 +474,7 @@ export function ProductsPage() {
                 <h4 className="font-medium truncate">{product.name}</h4>
                 <p className="text-xs text-muted-foreground">{product.category}</p>
                 <div className="flex items-center justify-between">
-                  <p className="text-lg font-semibold">EUR {product.price}</p>
+                  <p className="text-lg font-semibold">{product.price} TND</p>
                   <StatusBadge status={resolveStatusLabel(product.status, true)} type={resolveStatusType(product.status)} />
                 </div>
                 <div className="flex gap-2 pt-2">
@@ -559,7 +559,7 @@ export function ProductsPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Prix (EUR)</Label>
+                <Label htmlFor="price">Prix (TND)</Label>
                 <Input
                   id="price"
                   type="number"

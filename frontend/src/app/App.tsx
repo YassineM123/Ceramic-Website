@@ -245,7 +245,7 @@ export default function App() {
                   <h1 className="text-4xl lg:text-5xl font-serif text-[#17324D] mb-4">Commande confirmee</h1>
                   <p className="text-[#5E6F73] text-lg leading-relaxed mb-8">
                     Merci pour votre commande. Reference commande: {orderSuccess?.id || 'confirmee'}
-                    {typeof orderSuccess?.total === 'number' ? ` - Total confirme: ${orderSuccess.total} DT` : ''}
+                    {typeof orderSuccess?.total === 'number' ? ` - Total confirme: ${orderSuccess.total} TND` : ''}
                   </p>
                   <button
                     onClick={() => navigate('shop')}

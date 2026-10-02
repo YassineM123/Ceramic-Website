@@ -94,7 +94,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onCheckout }: C
                       <div className="flex-1 space-y-2">
                         <h4 className="font-serif text-[#17324D]">{item.name}</h4>
                         <p className="text-lg font-serif text-[#075D9A]">
-                          {item.price} DT
+                          {item.price} TND
                         </p>
                         <div className="flex items-center gap-3">
                           <button
@@ -134,20 +134,20 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onCheckout }: C
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-[#17324D]">
                     <span>Sous-total</span>
-                    <span>{subtotal} DT</span>
+                    <span>{subtotal} TND</span>
                   </div>
                   <div className="flex justify-between text-[#17324D]">
                     <span>Livraison</span>
-                    <span>{shipping === 0 ? 'Offerte' : `${shipping} DT`}</span>
+                    <span>{shipping === 0 ? 'Offerte' : `${shipping} TND`}</span>
                   </div>
                   {subtotal < 199 && (
                     <p className="text-xs text-[#5E6F73]">
-                      Ajoutez {199 - subtotal} DT pour profiter de la livraison offerte
+                      Ajoutez {199 - subtotal} TND pour profiter de la livraison offerte
                     </p>
                   )}
                   <div className="pt-3 border-t border-[#17324D]/10 flex justify-between font-serif text-lg text-[#17324D]">
                     <span>Total</span>
-                    <span>{total} DT</span>
+                    <span>{total} TND</span>
                   </div>
                 </div>
                 <button

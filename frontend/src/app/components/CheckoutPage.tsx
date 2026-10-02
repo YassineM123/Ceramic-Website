@@ -187,7 +187,7 @@ export function CheckoutPage({
               {serverTotal !== null && (
                 <div className="flex justify-between items-center text-base pt-2 border-t border-[#17324D]/10">
                   <span className="font-serif text-[#17324D]">Montant à payer :</span>
-                  <span className="font-serif font-bold text-[#075D9A] text-lg">{serverTotal} DT</span>
+                  <span className="font-serif font-bold text-[#075D9A] text-lg">{serverTotal} TND</span>
                 </div>
               )}
             </div>
@@ -415,7 +415,7 @@ export function CheckoutPage({
                     <div className="flex-1 min-w-0">
                       <h3 className="font-serif text-sm text-[#17324D] truncate">{item.name}</h3>
                       <p className="text-xs text-[#5E6F73]">Quantité: {item.quantity}</p>
-                      <p className="text-sm font-semibold text-[#075D9A]">{item.price * item.quantity} DT</p>
+                      <p className="text-sm font-semibold text-[#075D9A]">{item.price * item.quantity} TND</p>
                     </div>
                   </div>
                 ))}
@@ -438,24 +438,24 @@ export function CheckoutPage({
 
                 <div className="flex justify-between text-sm text-[#5E6F73]">
                   <span>Sous-total</span>
-                  <span className="font-semibold text-[#17324D]">{subtotal} DT</span>
+                  <span className="font-semibold text-[#17324D]">{subtotal} TND</span>
                 </div>
 
                 <div className="flex justify-between text-sm text-[#5E6F73]">
                   <span>Frais de livraison</span>
-                  <span className="font-semibold text-[#17324D]">{shipping === 0 ? 'Offerte' : `${shipping} DT`}</span>
+                  <span className="font-semibold text-[#17324D]">{shipping === 0 ? 'Offerte' : `${shipping} TND`}</span>
                 </div>
 
                 {tax > 0 && (
                   <div className="flex justify-between text-sm text-[#5E6F73]">
                     <span>Taxes</span>
-                    <span className="font-semibold text-[#17324D]">{tax} DT</span>
+                    <span className="font-semibold text-[#17324D]">{tax} TND</span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-baseline text-xl font-serif text-[#17324D] border-t border-[#17324D]/10 pt-3">
                   <span>Total</span>
-                  <span className="text-2xl font-bold text-[#075D9A]">{total} DT</span>
+                  <span className="text-2xl font-bold text-[#075D9A]">{total} TND</span>
                 </div>
               </div>
 
@@ -486,7 +486,7 @@ export function CheckoutPage({
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Confirmer la commande ({total} DT)</span>
+                    <span>Confirmer la commande ({total} TND)</span>
                   </>
                 )}
               </button>

@@ -6,6 +6,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   root: __dirname,
   cacheDir: path.resolve(__dirname, '../node_modules/.vite-admin'),
+  // Share the storefront's static assets so product paths like /album/... resolve here too
+  publicDir: path.resolve(__dirname, '../frontend/public'),
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them

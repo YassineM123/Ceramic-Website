@@ -5,7 +5,7 @@ import type { Product } from '../data/products';
 import type { StorefrontCategory } from '../services/storefrontApi';
 
 const sortOptions = ['Sélection', 'Prix croissant', 'Prix décroissant', 'Nouveautés', 'Meilleures ventes'];
-const priceRanges = ['Tous les prix', 'Moins de 50 DT', '50 DT - 100 DT', '100 DT - 200 DT', 'Plus de 200 DT'];
+const priceRanges = ['Tous les prix', 'Moins de 50 TND', '50 TND - 100 TND', '100 TND - 200 TND', 'Plus de 200 TND'];
 
 const pageSize = 9;
 
@@ -41,10 +41,10 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     const inPriceRange = (product: Product) => {
-      if (selectedPriceRange === 'Moins de 50 DT') return product.price < 50;
-      if (selectedPriceRange === '50 DT - 100 DT') return product.price >= 50 && product.price <= 100;
-      if (selectedPriceRange === '100 DT - 200 DT') return product.price > 100 && product.price <= 200;
-      if (selectedPriceRange === 'Plus de 200 DT') return product.price > 200;
+      if (selectedPriceRange === 'Moins de 50 TND') return product.price < 50;
+      if (selectedPriceRange === '50 TND - 100 TND') return product.price >= 50 && product.price <= 100;
+      if (selectedPriceRange === '100 TND - 200 TND') return product.price > 100 && product.price <= 200;
+      if (selectedPriceRange === 'Plus de 200 TND') return product.price > 200;
       return true;
     };
 
@@ -398,7 +398,7 @@ export function ShopPage({ products, categories, onAddToCart, onQuickView, onVie
                           )}
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xl font-serif text-[#075D9A]">{product.price} DT</span>
+                          <span className="text-xl font-serif text-[#075D9A]">{product.price} TND</span>
                           <div className="flex gap-1">
                             {[...Array(5)].map((_, i) => (
                               <svg key={i} className="w-4 h-4 fill-[#B86F3B]" viewBox="0 0 20 20">

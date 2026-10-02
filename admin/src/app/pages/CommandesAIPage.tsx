@@ -253,7 +253,7 @@ export function CommandesAIPage() {
         />
         <KPICard
           title="Revenus IA"
-          value={`${totalRevenue.toLocaleString()} EUR`}
+          value={`${totalRevenue.toLocaleString()} TND`}
           icon={<DollarSign size={24} />}
           trend={{ value: 18, isPositive: true }}
           subtitle="ce mois-ci"
@@ -382,7 +382,7 @@ export function CommandesAIPage() {
                       <StatusBadge status={statusConfig[order.status].label} type={statusConfig[order.status].type} />
                     </td>
                     <td className="p-4">
-                      <span className="font-medium">{order.amount.toLocaleString()} EUR</span>
+                      <span className="font-medium">{order.amount.toLocaleString()} TND</span>
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">{order.date}</td>
                     <td className="p-4">
@@ -500,7 +500,7 @@ export function CommandesAIPage() {
 
                     <div className="flex items-center justify-between pt-2 border-t">
                       <span className="text-sm font-medium">Montant total</span>
-                      <span className="text-xl font-bold">{editableOrder.amount.toLocaleString()} EUR</span>
+                      <span className="text-xl font-bold">{editableOrder.amount.toLocaleString()} TND</span>
                     </div>
                   </Card>
                 </div>

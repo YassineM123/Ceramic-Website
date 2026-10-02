@@ -191,7 +191,7 @@ export function CustomersPage() {
                       />
                     </td>
                     <td className="py-3 px-4 text-sm text-right">{customer.orders}</td>
-                    <td className="py-3 px-4 text-sm text-right font-medium">EUR {customer.totalSpent}</td>
+                    <td className="py-3 px-4 text-sm text-right font-medium">{customer.totalSpent} TND</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">{customer.lastActivity}</td>
                     <td className="py-3 px-4 text-right">
                       <Button size="sm" variant="ghost" onClick={() => setSelectedCustomer(customer)}>
@@ -250,11 +250,11 @@ export function CustomersPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Depense totale</p>
-                        <p className="text-2xl font-semibold">EUR {selectedCustomer.totalSpent}</p>
+                        <p className="text-2xl font-semibold">{selectedCustomer.totalSpent} TND</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Panier moyen</p>
-                        <p className="text-2xl font-semibold">EUR {selectedCustomer.orders ? Math.round(selectedCustomer.totalSpent / selectedCustomer.orders) : 0}</p>
+                        <p className="text-2xl font-semibold">{selectedCustomer.orders ? Math.round(selectedCustomer.totalSpent / selectedCustomer.orders) : 0} TND</p>
                       </div>
                     </div>
                   </Card>
