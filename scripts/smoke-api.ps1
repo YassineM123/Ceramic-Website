@@ -9,8 +9,21 @@ Get-ChildItem -Path $dataDir -Filter '*.json' -File | ForEach-Object {
   Copy-Item -LiteralPath $_.FullName -Destination $backupDataDir -Force
 }
 
-$p = Start-Process -FilePath node -ArgumentList 'backend/src/server.mjs' -PassThru
-Start-Sleep -Seconds 2
+$ownsProcess = $false
+$p = $null
+$existingBackend = $false
+try {
+  $existingHealth = Invoke-RestMethod -Method Get -Uri "$baseUrl/api/health" -TimeoutSec 2
+  $existingBackend = $existingHealth.data.ok -eq $true -and $existingHealth.data.service -eq 'admin-dashboard-backend'
+} catch {
+  $existingBackend = $false
+}
+
+if (-not $existingBackend) {
+  $p = Start-Process -FilePath node -ArgumentList 'backend/src/server.mjs' -PassThru
+  $ownsProcess = $true
+  Start-Sleep -Seconds 2
+}
 
 try {
   $loginBody = @{ email = 'admin@client.com'; password = 'Admin@12345' } | ConvertTo-Json
@@ -313,7 +326,7 @@ try {
   "HEALTH_OK=$($health.data.ok) USER=$($me.data.user.email) ORDERS=$($orders.meta.total) PRODUCTS=$($products.meta.total) PUBLIC_PRODUCTS=$($publicProducts.meta.total) CUSTOMERS=$($customers.meta.total) STOCK_MOVEMENTS=$($stockMovements.meta.total) STOCK_ALERTS=$($stockAlerts.meta.total) DELIVERIES=$($deliveries.meta.total) DELIVERY_REPORT=$($deliveryReport.data.total) INVOICES=$($invoices.meta.total) DELIVERY_NOTES=$($deliveryNotes.meta.total) ACCOUNTING_REVENUE=$($accounting.data.revenue) ACCOUNTING_PROFIT=$($accountingDashboard.data.profit) ADS=$($ads.meta.total) MARKETING=$($marketing.meta.total) TEMPLATES=$($templates.meta.total) ANALYTICS_ORDERS=$($analytics.data.kpis.orders) INTEGRATIONS=$($integrations.meta.total) INTEGRATION_HEALTH=$($integrationHealth.data.ok) CHANNELS=$($channels.meta.total) SYNC_JOBS=$($syncJobs.meta.total) SEARCH=$($search.meta.total) NOTIFICATIONS=$($notifications.meta.total) AGENT_CHANNELS=$($agentChannels.data.Count) AGENT_CONVERSATIONS=$($agentConversations.meta.total) AGENT_RULES=$($agentRules.meta.total) ADMIN_USERS=$($adminUsers.meta.total) UPLOAD=$($deletedUpload.data.id) PUBLIC_CONTACT=$($publicContact.data.status) PUBLIC_NEWSLETTER=$($publicNewsletter.data.status) LOGOUT=$($logout.data.success)"
 }
 finally {
-  if ($p -and -not $p.HasExited) {
+  if ($ownsProcess -and $p -and -not $p.HasExited) {
     Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
   }
   if (Test-Path -LiteralPath $backupDataDir) {
