@@ -57,6 +57,7 @@ const defaultSettings = {
   },
   agents: {
     autoReplyEnabled: true,
+    manualFallbackEnabled: true,
     tone: 'professionnel',
     language: 'fr',
   },

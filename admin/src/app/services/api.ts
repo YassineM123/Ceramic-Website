@@ -256,6 +256,7 @@ export interface DashboardAssistantResponse {
 
 export interface AgentsSettings {
   autoReplyEnabled: boolean;
+  manualFallbackEnabled: boolean;
   tone: 'professionnel' | 'amical' | 'commercial';
   language: 'fr' | 'en' | 'ar';
 }

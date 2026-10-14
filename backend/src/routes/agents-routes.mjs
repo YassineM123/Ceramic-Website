@@ -601,7 +601,11 @@ export function registerAgentsRoutes(router, deps) {
       }
 
       const shouldIgnoreAutoReply = aiReply?.is_spam === true && aiReply?.action === 'ignore';
-      if (!shouldIgnoreAutoReply) {
+      const needsManualIntervention = Boolean(
+        settings.agents?.manualFallbackEnabled !== false
+        && (aiReply?.needs_human === true || workflow.analysis?.needs_human === true)
+      );
+      if (!shouldIgnoreAutoReply && !needsManualIntervention) {
         const autoReplyText =
           typeof aiReply?.reply === 'string' ? aiReply.reply : buildFallbackReply(conversation.contact);
 
@@ -664,6 +668,16 @@ export function registerAgentsRoutes(router, deps) {
         });
         nextLastMessage = autoReplyText;
         nextTimestamp = nowTimeLabel();
+      } else if (needsManualIntervention) {
+        updatedMessages[updatedMessages.length - 1] = {
+          ...updatedMessages[updatedMessages.length - 1],
+          aiMeta: {
+            ...(updatedMessages[updatedMessages.length - 1]?.aiMeta || {}),
+            needs_human: true,
+            action: 'manual_review',
+            human_reason: aiReply?.human_reason || workflow.analysis?.reason || 'Manual admin response required.',
+          },
+        };
       }
     }
     if (sender === 'contact' && !settings.agents?.autoReplyEnabled) {
@@ -719,7 +733,7 @@ export function registerAgentsRoutes(router, deps) {
     const settings = await settingsRepo.getAll();
     return {
       status: 200,
-      data: settings.agents || { autoReplyEnabled: true, tone: 'professionnel', language: 'fr' },
+      data: { manualFallbackEnabled: true, ...(settings.agents || { autoReplyEnabled: true, tone: 'professionnel', language: 'fr' }) },
     };
   });
 

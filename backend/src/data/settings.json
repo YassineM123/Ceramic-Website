@@ -30,6 +30,7 @@
   },
   "agents": {
     "autoReplyEnabled": true,
+    "manualFallbackEnabled": true,
     "tone": "professionnel",
     "language": "ar"
   },

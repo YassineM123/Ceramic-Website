@@ -53,7 +53,7 @@ export function AgentsSocialPage() {
   const [messages, setMessages] = useState<MessageRecord[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [conversationSearch, setConversationSearch] = useState('');
-  const [settings, setSettings] = useState<AgentsSettings>({ autoReplyEnabled: true, tone: 'professionnel', language: 'fr' });
+  const [settings, setSettings] = useState<AgentsSettings>({ autoReplyEnabled: true, manualFallbackEnabled: true, tone: 'professionnel', language: 'fr' });
   const [rules, setRules] = useState<AgentRule[]>([]);
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [aiSuggestionAnalysis, setAiSuggestionAnalysis] = useState<SocialAgentAnalysis | null>(null);
@@ -530,6 +530,14 @@ export function AgentsSocialPage() {
                 <div className="text-xs text-muted-foreground">Activer l'IA pour répondre automatiquement</div>
               </div>
               <Switch checked={settings.autoReplyEnabled} onCheckedChange={(value) => void patchSettings({ autoReplyEnabled: value })} />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg border mb-4">
+              <div>
+                <div className="font-medium text-sm">Intervention manuelle si besoin</div>
+                <div className="text-xs text-muted-foreground">Si l’IA ne comprend pas ou demande un humain, elle laisse la réponse à l’admin.</div>
+              </div>
+              <Switch checked={settings.manualFallbackEnabled} onCheckedChange={(value) => void patchSettings({ manualFallbackEnabled: value })} />
             </div>
 
             <div className="space-y-2">
