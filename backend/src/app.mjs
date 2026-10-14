@@ -179,6 +179,8 @@ export async function createApp(env) {
     conversationAnalysesRepo: createArrayRepository(store, 'conversation-analyses'),
     deliveriesRepo: createArrayRepository(store, 'deliveries'),
     stockMovementsRepo: createArrayRepository(store, 'stock-movements'),
+    suppliersRepo: createArrayRepository(store, 'suppliers'),
+    purchaseOrdersRepo: createArrayRepository(store, 'purchase-orders'),
     invoicesRepo: createInvoiceRepository(store),
     deliveryNotesRepo: createArrayRepository(store, 'delivery-notes'),
     expensesRepo: createArrayRepository(store, 'expenses'),
@@ -221,9 +223,7 @@ export async function createApp(env) {
     leadsRepo: deps.leadsRepo,
   });
   deps.copilotService = createCopilotService({ env });
-  deps.dashboardAssistantService = createDashboardAssistantService({
-    env,
-    dataAccess: {
+  const dashboardAssistantDataAccess = {
       ordersRepo: deps.ordersRepo,
       productsRepo: deps.productsRepo,
       customersRepo: deps.customersRepo,
@@ -231,8 +231,8 @@ export async function createApp(env) {
       leadsRepo: deps.leadsRepo,
       conversationsRepo: deps.conversationsRepo,
       settingsRepo: deps.settingsRepo,
-    },
-  });
+  };
+  deps.dashboardAssistantService = createDashboardAssistantService({ env, dataAccess: dashboardAssistantDataAccess });
   deps.conversationAnalyzerService = createConversationAnalyzerService({
     env,
   });
@@ -260,6 +260,7 @@ export async function createApp(env) {
     notificationsRepo: deps.notificationsRepo,
   });
   deps.ecommerceService = createEcommerceService(deps);
+  dashboardAssistantDataAccess.ecommerceService = deps.ecommerceService;
   deps.invoiceService = createInvoiceService(deps);
   deps.deliveryNoteService = createDeliveryNoteService(deps);
   deps.accountingService = createAccountingService(deps);

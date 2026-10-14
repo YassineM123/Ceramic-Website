@@ -26,6 +26,7 @@ type ProductFormState = {
   category: string;
   status: string;
   price: string;
+  costPrice: string;
   stock: string;
   sku: string;
   image: string;
@@ -39,6 +40,7 @@ const defaultProductForm: ProductFormState = {
   category: 'Electronique',
   status: 'available',
   price: '',
+  costPrice: '',
   stock: '',
   sku: '',
   image: DEFAULT_PRODUCT_IMAGE,
@@ -175,6 +177,7 @@ export function ProductsPage() {
       category: product.category || 'Electronique',
       status: product.status || 'available',
       price: String(product.price),
+      costPrice: String(product.costPrice ?? ''),
       stock: String(product.stock),
       sku: '',
       image: product.image || DEFAULT_PRODUCT_IMAGE,
@@ -195,6 +198,7 @@ export function ProductsPage() {
     const category = productForm.category.trim();
     const image = productForm.image.trim() || editingProduct?.image || DEFAULT_PRODUCT_IMAGE;
     const price = Number(productForm.price);
+    const costPrice = Number(productForm.costPrice);
     const stock = Number(productForm.stock);
 
     if (!name) {
@@ -209,6 +213,10 @@ export function ProductsPage() {
       setLoadError('Le prix doit etre un nombre positif.');
       return;
     }
+    if (!Number.isFinite(costPrice) || costPrice < 0) {
+      setLoadError('Le prix d achat doit etre un nombre positif.');
+      return;
+    }
     if (!Number.isFinite(stock) || stock < 0) {
       setLoadError('Le stock doit etre un nombre positif.');
       return;
@@ -219,6 +227,8 @@ export function ProductsPage() {
       category,
       image,
       price,
+      unitPrice: price,
+      costPrice,
       stock,
       status: deriveStatusFromForm(stock, productForm.status),
       views: editingProduct?.views || 0,
@@ -407,7 +417,8 @@ export function ProductsPage() {
                 <tr>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Image</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Nom</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Prix</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Prix unitaire</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Benefice / unite</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Stock</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Vues</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Statut</th>
@@ -431,7 +442,10 @@ export function ProductsPage() {
                       <p className="text-sm font-medium">{product.name}</p>
                       <p className="text-xs text-muted-foreground">{product.category}</p>
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-medium">{product.price} TND</td>
+                    <td className="py-3 px-4 text-sm text-right font-medium">{product.unitPrice ?? product.price} TND</td>
+                    <td className="py-3 px-4 text-sm text-right font-medium text-emerald-600">
+                      {((product.unitPrice ?? product.price) - (product.costPrice ?? 0)).toFixed(2)} TND
+                    </td>
                     <td className="py-3 px-4 text-sm text-right">
                       <span className={product.stock < 10 ? 'text-warning' : ''}>{product.stock}</span>
                     </td>
@@ -474,9 +488,12 @@ export function ProductsPage() {
                 <h4 className="font-medium truncate">{product.name}</h4>
                 <p className="text-xs text-muted-foreground">{product.category}</p>
                 <div className="flex items-center justify-between">
-                  <p className="text-lg font-semibold">{product.price} TND</p>
+                  <p className="text-lg font-semibold">{product.unitPrice ?? product.price} TND / unite</p>
                   <StatusBadge status={resolveStatusLabel(product.status, true)} type={resolveStatusType(product.status)} />
                 </div>
+                <p className="text-sm text-emerald-600">
+                  Benefice: {((product.unitPrice ?? product.price) - (product.costPrice ?? 0)).toFixed(2)} TND / unite
+                </p>
                 <div className="flex gap-2 pt-2">
                   <Button size="sm" variant="outline" className="flex-1" onClick={() => openEditProductDialog(product)}>
                     Editer
@@ -559,13 +576,24 @@ export function ProductsPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Prix (TND)</Label>
+                <Label htmlFor="price">Prix unitaire (TND)</Label>
                 <Input
                   id="price"
                   type="number"
                   min="0"
                   value={productForm.price}
                   onChange={(event) => setProductForm((prev) => ({ ...prev, price: event.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="costPrice">Prix d achat unitaire (TND)</Label>
+                <Input
+                  id="costPrice"
+                  type="number"
+                  min="0"
+                  value={productForm.costPrice}
+                  onChange={(event) => setProductForm((prev) => ({ ...prev, costPrice: event.target.value }))}
                   placeholder="0.00"
                 />
               </div>

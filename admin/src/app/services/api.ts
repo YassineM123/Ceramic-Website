@@ -113,6 +113,8 @@ export interface ProductRecord {
   name: string;
   sku?: string;
   price: number;
+  /** Selling price for one unit. `price` remains supported for API compatibility. */
+  unitPrice?: number;
   costPrice?: number;
   stock: number;
   views: number;
@@ -123,6 +125,11 @@ export interface ProductRecord {
   image: string;
   variants?: ProductVariantRecord[];
 }
+
+export interface SupplierRecord { id: string; name: string; phone?: string; email?: string; address?: string; notes?: string; active: boolean; }
+export interface PurchaseOrderItem { productId: string; variantId: string; quantity: number; unitCost: number; total: number; }
+export interface PurchaseOrderRecord { id: string; supplierId: string; supplierName: string; status: string; items: PurchaseOrderItem[]; total: number; notes?: string; createdAt: string; receivedAt?: string; }
+export interface ReorderSuggestion { productId: string; productName: string; variantId: string; sku: string; stock: number; averageDailySales: number; targetStock: number; suggestedQuantity: number; }
 
 export type UploadPurpose = 'product-image' | 'category-image' | 'hero-image' | 'gallery-image' | 'logo' | 'icon' | 'document';
 
@@ -243,7 +250,9 @@ export interface DashboardAssistantTurn {
 export interface DashboardAssistantResponse {
   reply: string;
   suggestions: string[];
-  mode: 'ai' | 'fallback';
+  mode: 'ai' | 'fallback' | 'action';
+  specialist?: 'sales' | 'crm' | 'inventory' | 'analytics' | 'marketing' | 'support';
+  action?: { type: string; id?: string; status: string };
   language: DashboardAssistantLanguage;
   assistantMode: DashboardAssistantMode;
   accessScope?: {
@@ -1246,6 +1255,30 @@ export async function fetchStockMovementsApi(params?: { productId?: string; type
 
 export async function fetchStockAlertsApi(): Promise<StockAlertRecord[]> {
   return (await request<StockAlertRecord[]>('/stock/alerts', { method: 'GET', headers: authHeaders() })).data;
+}
+
+export async function fetchSuppliersApi(): Promise<SupplierRecord[]> {
+  return (await request<SupplierRecord[]>('/suppliers', { method: 'GET', headers: authHeaders() })).data;
+}
+
+export async function createSupplierApi(payload: Partial<SupplierRecord>): Promise<SupplierRecord> {
+  return (await request<SupplierRecord>('/suppliers', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })).data;
+}
+
+export async function fetchPurchaseOrdersApi(): Promise<PurchaseOrderRecord[]> {
+  return (await request<PurchaseOrderRecord[]>('/purchase-orders', { method: 'GET', headers: authHeaders() })).data;
+}
+
+export async function createPurchaseOrderApi(payload: { supplierId: string; items: Array<{ productId: string; variantId: string; quantity: number; unitCost: number }>; notes?: string }): Promise<PurchaseOrderRecord> {
+  return (await request<PurchaseOrderRecord>('/purchase-orders', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })).data;
+}
+
+export async function fetchReorderSuggestionsApi(): Promise<ReorderSuggestion[]> {
+  return (await request<ReorderSuggestion[]>('/stock/reorder-suggestions', { method: 'GET', headers: authHeaders() })).data;
+}
+
+export async function receivePurchaseOrderApi(id: string): Promise<PurchaseOrderRecord> {
+  return (await request<PurchaseOrderRecord>(`/purchase-orders/${encodeURIComponent(id)}/receive`, { method: 'POST', headers: authHeaders() })).data;
 }
 
 export async function adjustProductStockApi(

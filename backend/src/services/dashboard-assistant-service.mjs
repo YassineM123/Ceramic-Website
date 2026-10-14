@@ -122,6 +122,87 @@ function detectAssistantIntent(message = '') {
   return { intent: 'general', confidence: 0.54 };
 }
 
+function detectSpecialist(message = '', intent = 'general') {
+  const text = String(message || '').toLowerCase();
+  if (/(client|customer|crm|fidel|segment|lead)/.test(text)) return 'crm';
+  if (/(stock|rupture|inventaire|produit|sku|reappro|variant)/.test(text)) return 'inventory';
+  if (/(marketing|campagne|publicite|ads|acquisition|promotion|newsletter)/.test(text)) return 'marketing';
+  if (/(support|plainte|reclamation|probleme|retour|remboursement|aide)/.test(text)) return 'support';
+  if (/(kpi|analytics|analyse|dashboard|rapport|performance)/.test(text)) return 'analytics';
+  if (intent === 'sales_analysis' || /(vente|commande|order|achat|add|create|save|buy|bought|purchase|prix|chiffre)/.test(text)) return 'sales';
+  return intent === 'product_analysis' ? 'inventory' : 'analytics';
+}
+
+function detectOperationalRequest(message = '') {
+  return /(ajouter|add|create|save|register|buy|bought|purchase|creer|créer|enregistrer|saisir|modifier|supprimer|commande|acheter|achat|order)/i.test(
+    String(message || '')
+  );
+}
+
+function buildOperationalReply({ language, assistantMode }) {
+  if (assistantMode !== 'agent') return null;
+  const french = language === 'fr';
+  return {
+    intent: 'general',
+    confidence: 0.95,
+    reply: french
+      ? 'Je peux vous aider à enregistrer cette opération en mode Agent. Pour créer le client et la commande, il me faut le nom complet du client, son téléphone, son adresse et la variante du produit. Envoyez ces informations puis confirmez avec « enregistrer ».'
+      : 'I can help register this operation in Agent mode. To create the customer and order, I need the customer full name, phone, address, and product variant. Send those details and confirm with “register”.',
+    suggestions: french ? ['Afficher les clients existants', 'Ouvrir une commande manuelle'] : ['Show existing customers', 'Open a manual order'],
+    facts: [],
+    hypotheses: [],
+    priority_actions: french
+      ? ['Collecter les informations obligatoires', 'Demander une confirmation explicite avant enregistrement']
+      : ['Collect required fields', 'Ask for explicit confirmation before saving'],
+  };
+}
+
+function parseAgentOrder(message) {
+  const text = String(message || '').trim();
+  if (!/(enregistrer|sauvegarder|save|register|confirmer|confirm)/i.test(text)) return null;
+  const jsonStart = text.indexOf('{');
+  if (jsonStart < 0) return null;
+  try {
+    const payload = JSON.parse(text.slice(jsonStart));
+    if (!payload || typeof payload !== 'object') return null;
+    return payload;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function parseNaturalAgentOrder(text, products = []) {
+  const source = String(text || '').trim();
+  if (!/(register|enregistrer|sauvegarder|confirm|confirmer)/i.test(source)) return null;
+  const phoneMatch = source.match(/(?:phone|tel|telephone|t[ée]l[ée]phone)\s*[:.]?\s*(\+?\d[\d\s-]{6,})/i);
+  const addressMatch = source.match(/(?:address|adresse)\s*[:.]?\s*([^,.;]+(?:\s+[^,.;]+){0,4})/i);
+  const quantityMatch = source.match(/(?:quantity|quantit[ée]|qty)\s*[:.]?\s*(\d+)|\b(\d+)\s+(?:x|pieces?|pi[èe]ces?|coffee|coffees?)\b/i);
+  const product = products.find((row) => {
+    const name = String(row?.name || '').trim();
+    return name && source.toLowerCase().includes(name.toLowerCase());
+  });
+  if (!phoneMatch || !addressMatch || !product || !quantityMatch) return null;
+  const nameMatch = source.match(/(?:customer|client|for)\s*[:.]?\s*([^,]+?)(?:,?\s+phone|,?\s+tel)/i)
+    || source.match(/(?:^|\s)([A-ZÀ-Ý][a-zà-ÿ]+(?:\s+[A-ZÀ-Ý][a-zà-ÿ]+){1,3}),\s*(?:phone|tel|telephone)/);
+  const customerName = String(nameMatch?.[1] || '')
+    .trim()
+    .replace(new RegExp(`^${String(product?.name || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`, 'i'), '')
+    .trim()
+    .split(/\s+/)
+    .slice(-3)
+    .join(' ');
+  if (!customerName) return null;
+  const variant = Array.isArray(product.variants) ? product.variants[0] : null;
+  return {
+    customer: {
+      name: customerName,
+      phone: phoneMatch[1].replace(/[\s-]/g, ''),
+      address: addressMatch[1].trim(),
+    },
+    items: [{ productId: product.id, variantId: variant?.id, quantity: Number(quantityMatch[1] || quantityMatch[2]) }],
+  };
+}
+
 function formatCurrency(value, currency) {
   return `${round(value, 2)} ${String(currency || 'TND')}`;
 }
@@ -515,6 +596,40 @@ export function createDashboardAssistantService({ env, dataAccess = {} }) {
     const assistantMode = normalizeAssistantMode(mode);
     const dashboardContext = await loadDashboardContext(dataAccess);
     const intentDetection = detectAssistantIntent(cleanMessage);
+    const specialist = detectSpecialist(cleanMessage, intentDetection.intent);
+    const operationalPayload = buildOperationalReply({
+      language,
+      assistantMode,
+    });
+    const conversationText = [...normalizedHistory, { role: 'user', content: cleanMessage }]
+      .filter((turn) => turn.role === 'user')
+      .map((turn) => turn.content)
+      .join(' ');
+    const products = await safeList(dataAccess?.productsRepo);
+    const agentOrder = parseAgentOrder(cleanMessage) || parseNaturalAgentOrder(conversationText, products);
+    const explicitConfirmation = /^(confirme|confirm|register|enregistrer|sauvegarder|save)\b/i.test(cleanMessage.trim());
+    const explicitPayload = /^(confirme|confirm|register|enregistrer|sauvegarder|save)\s*\{/i.test(cleanMessage.trim());
+    if (assistantMode === 'agent' && agentOrder && (explicitConfirmation || explicitPayload) && typeof dataAccess?.ecommerceService?.createManualOrder === 'function') {
+      const order = await dataAccess.ecommerceService.createManualOrder(
+        { user },
+        agentOrder
+      );
+      return {
+        reply:
+          language === 'fr'
+            ? `Commande ${order.id} enregistrée avec succès pour ${order.customer}. Total: ${order.total} TND.`
+            : `Order ${order.id} was saved successfully for ${order.customer}. Total: ${order.total} TND.`,
+        suggestions: language === 'fr' ? ['Afficher les commandes', 'Afficher les clients'] : ['Show orders', 'Show customers'],
+        mode: 'action',
+        language,
+        assistantMode,
+        accessScope: dashboardContext.accessScope,
+        timestamp: new Date().toISOString(),
+        action: { type: 'create_manual_order', id: order.id, status: 'completed' },
+        specialist,
+        analysis: { intent: 'sales_analysis', confidence: 1, confidence_tier: 'high', facts: [], hypotheses: [], priority_actions: [] },
+      };
+    }
     const fallbackPayload = buildFallbackReply({
       language,
       intent: intentDetection.intent,
@@ -522,6 +637,32 @@ export function createDashboardAssistantService({ env, dataAccess = {} }) {
       dashboardContext,
       intentConfidence: intentDetection.confidence,
     });
+
+    const confirmationOnly = /^(confirme|confirm|register|enregistrer|sauvegarder|save)\b/i.test(cleanMessage.trim());
+    if ((detectOperationalRequest(cleanMessage) || confirmationOnly) && operationalPayload) {
+      return {
+        reply: confirmationOnly && !agentOrder
+          ? (language === 'fr'
+            ? `Je ne trouve pas le produit demandé dans le catalogue actuel. Produits disponibles: ${products.slice(0, 8).map((row) => row.name).join(', ') || 'aucun'}. Choisissez un produit exact avant la sauvegarde.`
+            : `I cannot find the requested product in the current catalog. Available products: ${products.slice(0, 8).map((row) => row.name).join(', ') || 'none'}. Choose an exact product before saving.`)
+          : operationalPayload.reply,
+        suggestions: operationalPayload.suggestions,
+        mode: 'fallback',
+        language,
+        assistantMode,
+        accessScope: dashboardContext.accessScope,
+        timestamp: new Date().toISOString(),
+        analysis: {
+          intent: operationalPayload.intent,
+          confidence: operationalPayload.confidence,
+          confidence_tier: resolveConfidenceTier(operationalPayload.confidence),
+          facts: operationalPayload.facts,
+          hypotheses: operationalPayload.hypotheses,
+          priority_actions: operationalPayload.priority_actions,
+        },
+        specialist,
+      };
+    }
 
     if (canAttemptAi(env)) {
       try {
@@ -555,6 +696,7 @@ export function createDashboardAssistantService({ env, dataAccess = {} }) {
             hypotheses: normalized.hypotheses,
             priority_actions: normalized.priority_actions,
           },
+        specialist,
         };
       } catch (_error) {
         // Keep dashboard assistant available with local fallback if AI fails.
@@ -577,6 +719,7 @@ export function createDashboardAssistantService({ env, dataAccess = {} }) {
         hypotheses: fallbackPayload.hypotheses,
         priority_actions: fallbackPayload.priority_actions,
       },
+      specialist,
     };
   }
 

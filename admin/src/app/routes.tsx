@@ -89,6 +89,14 @@ export const router = createBrowserRouter([
         },
       },
       {
+        path: 'purchases',
+        hydrateFallbackElement,
+        lazy: async () => {
+          const { PurchasesPage } = await import('./pages/PurchasesPage');
+          return { Component: PurchasesPage };
+        },
+      },
+      {
         path: 'customers',
         hydrateFallbackElement,
         lazy: async () => {

@@ -116,7 +116,10 @@ function normalizeProduct(product) {
     id: String(product.id || createId('prd')),
     name: String(product.name || 'Unnamed product'),
     sku,
-    price: toNumber(product.price, 0),
+    // `price` is the legacy/public name; accept and expose unitPrice so product
+    // management and order lines can use an explicit unit-price contract.
+    price: toNumber(product.unitPrice ?? product.price, 0),
+    unitPrice: toNumber(product.unitPrice ?? product.price, 0),
     costPrice: toNumber(product.costPrice, Math.round(toNumber(product.price, 0) * 0.55 * 100) / 100),
     stock: totalStock,
     status,

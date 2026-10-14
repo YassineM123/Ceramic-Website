@@ -215,6 +215,100 @@ export function registerEcommerceRoutes(router, deps) {
     return { status: 200, data: rows, meta: { total: rows.length } };
   });
 
+  router.register('GET', '/api/stock/reorder-suggestions', async (context) => {
+    requirePermission(context, 'stock.read');
+    const [products, orders] = await Promise.all([ecommerceService.listProducts(), ecommerceService.listOrders()]);
+    const sold = new Map();
+    for (const order of orders.filter((row) => !['Cancelled', 'Returned'].includes(String(row.status)))) {
+      for (const item of order.lineItems || []) { const key = `${item.productId}:${item.variantId || ''}`; sold.set(key, (sold.get(key) || 0) + Number(item.quantity || 0)); }
+    }
+    const rows = products.flatMap((product) => (product.variants || []).map((variant) => { const key = `${product.id}:${variant.id}`; const averageDailySales = Math.round(((sold.get(key) || 0) / 30) * 100) / 100; const targetStock = Math.max(Number(variant.lowStockThreshold || 5), Math.ceil(averageDailySales * 30)); return { productId: product.id, productName: product.name, variantId: variant.id, sku: variant.sku, stock: Number(variant.stock || 0), averageDailySales, targetStock, suggestedQuantity: Math.max(0, targetStock - Number(variant.stock || 0)) }; })).filter((row) => row.suggestedQuantity > 0).sort((a, b) => b.suggestedQuantity - a.suggestedQuantity);
+    return { status: 200, data: rows, meta: { total: rows.length } };
+  });
+
+  router.register('GET', '/api/suppliers', async (context) => {
+    requirePermission(context, 'suppliers.read');
+    let rows = await deps.suppliersRepo.list();
+    const search = String(context.query.search || '').trim().toLowerCase();
+    if (search) rows = rows.filter((row) => [row.name, row.phone, row.email].some((value) => String(value || '').toLowerCase().includes(search)));
+    return { status: 200, data: rows.sort((a, b) => String(a.name).localeCompare(String(b.name))), meta: { total: rows.length } };
+  });
+
+  router.register('POST', '/api/suppliers', async (context) => {
+    requirePermission(context, 'suppliers.write');
+    const body = cleanBody(await context.getBody());
+    const name = String(body.name || '').trim();
+    if (!name) throw new AppError(400, 'VALIDATION_ERROR', 'Supplier name is required');
+    const supplier = await deps.suppliersRepo.create({ id: body.id || `sup_${Date.now().toString(36)}`, name, phone: String(body.phone || '').trim(), email: String(body.email || '').trim(), address: String(body.address || '').trim(), notes: String(body.notes || '').trim(), active: body.active !== false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    await deps.auditLogService.record(context, 'suppliers.create', 'supplier', supplier.id, supplier);
+    return { status: 201, data: supplier };
+  });
+
+  router.register('PATCH', '/api/suppliers/:id', async (context) => {
+    requirePermission(context, 'suppliers.write');
+    const current = await deps.suppliersRepo.getById(context.params.id);
+    if (!current) throw new AppError(404, 'NOT_FOUND', 'Supplier not found');
+    const patch = cleanBody(await context.getBody());
+    const next = { ...current, ...patch, name: String(patch.name ?? current.name).trim(), updatedAt: new Date().toISOString() };
+    if (!next.name) throw new AppError(400, 'VALIDATION_ERROR', 'Supplier name is required');
+    const supplier = await deps.suppliersRepo.update(context.params.id, next);
+    await deps.auditLogService.record(context, 'suppliers.update', 'supplier', context.params.id, patch);
+    return { status: 200, data: supplier };
+  });
+
+  router.register('DELETE', '/api/suppliers/:id', async (context) => {
+    requirePermission(context, 'suppliers.write');
+    const supplier = await deps.suppliersRepo.getById(context.params.id);
+    if (!supplier) throw new AppError(404, 'NOT_FOUND', 'Supplier not found');
+    const purchaseOrders = await deps.purchaseOrdersRepo.list();
+    if (purchaseOrders.some((order) => String(order.supplierId) === String(context.params.id))) throw new AppError(409, 'CONFLICT', 'Supplier has purchase history and cannot be deleted');
+    const deleted = await deps.suppliersRepo.remove(context.params.id);
+    await deps.auditLogService.record(context, 'suppliers.delete', 'supplier', context.params.id, { name: supplier.name });
+    return { status: 200, data: deleted };
+  });
+
+  router.register('GET', '/api/purchase-orders', async (context) => {
+    requirePermission(context, 'purchases.read');
+    const suppliers = await deps.suppliersRepo.list();
+    const supplierNames = new Map(suppliers.map((row) => [String(row.id), row.name]));
+    let rows = await deps.purchaseOrdersRepo.list();
+    if (context.query.status) rows = rows.filter((row) => row.status === context.query.status);
+    rows = rows.map((row) => ({ ...row, supplierName: row.supplierName || supplierNames.get(String(row.supplierId)) || 'Unknown supplier' })).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    return { status: 200, data: rows, meta: { total: rows.length } };
+  });
+
+  router.register('POST', '/api/purchase-orders', async (context) => {
+    requirePermission(context, 'purchases.write');
+    const body = cleanBody(await context.getBody());
+    const supplier = await deps.suppliersRepo.getById(body.supplierId);
+    if (!supplier) throw new AppError(400, 'VALIDATION_ERROR', 'Valid supplierId is required');
+    const items = Array.isArray(body.items) ? body.items : [];
+    if (!items.length) throw new AppError(400, 'VALIDATION_ERROR', 'At least one purchase item is required');
+    const normalizedItems = items.map((item) => ({ productId: String(item.productId || ''), variantId: String(item.variantId || ''), quantity: Number(item.quantity), unitCost: Number(item.unitCost) })).map((item) => ({ ...item, total: Math.round(item.quantity * item.unitCost * 100) / 100 }));
+    if (normalizedItems.some((item) => !item.productId || !item.variantId || !Number.isInteger(item.quantity) || item.quantity <= 0 || !Number.isFinite(item.unitCost) || item.unitCost < 0)) throw new AppError(400, 'VALIDATION_ERROR', 'Purchase items must contain valid product, variant, quantity and cost');
+    const products = await ecommerceService.listProducts();
+    for (const item of normalizedItems) {
+      const product = products.find((row) => String(row.id) === item.productId);
+      if (!product || !(product.variants || []).some((variant) => String(variant.id) === item.variantId)) throw new AppError(400, 'VALIDATION_ERROR', 'Each purchase item must reference an existing product variant');
+    }
+    const order = await deps.purchaseOrdersRepo.create({ id: body.id || `po_${Date.now().toString(36)}`, supplierId: supplier.id, supplierName: supplier.name, status: 'draft', items: normalizedItems, total: Math.round(normalizedItems.reduce((sum, item) => sum + item.total, 0) * 100) / 100, notes: String(body.notes || '').trim(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    await deps.auditLogService.record(context, 'purchase-orders.create', 'purchase-order', order.id, order);
+    return { status: 201, data: order };
+  });
+
+  router.register('POST', '/api/purchase-orders/:id/receive', async (context) => {
+    requirePermission(context, 'purchases.write');
+    const order = await deps.purchaseOrdersRepo.getById(context.params.id);
+    if (!order) throw new AppError(404, 'NOT_FOUND', 'Purchase order not found');
+    if (order.status === 'received') throw new AppError(409, 'CONFLICT', 'Purchase order already received');
+    for (const item of order.items || []) {
+      await ecommerceService.adjustStock(context, item.productId, { variantId: item.variantId, quantity: item.quantity, type: 'stock_added', reason: `Purchase order ${order.id}` });
+    }
+    const received = await deps.purchaseOrdersRepo.update(order.id, { ...order, status: 'received', receivedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    await deps.auditLogService.record(context, 'purchase-orders.receive', 'purchase-order', order.id, { items: order.items });
+    return { status: 200, data: received };
+  });
+
   router.register('GET', '/api/customers', async (context) => {
     requirePermission(context, 'customers.read');
     let rows = await ecommerceService.listCustomers();
